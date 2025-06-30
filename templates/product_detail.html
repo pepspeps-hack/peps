@@ -1,53 +1,81 @@
 {% extends "base.html" %}
 
-{% block title %}{{ product.name }} - Luxury Watches{% endblock %}
+{% block title %}{{ product.name }} - LuxeWatch Emporium{% endblock %}
 
 {% block content %}
-<section class="product-detail-section">
-    <div class="product-image-gallery">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="main-product-image">
-        <!-- Add thumbnails here if needed -->
-    </div>
-    <div class="product-info">
-        <h1>{{ product.name }}</h1>
-        <p class="brand">Brand: {{ product.brand }}</p>
-        <p class="price">${{ "%.2f"|format(product.price) }}</p>
-
-        <div class="description">
-            <h3>Description</h3>
-            <p>{{ product.description }}</p>
+<div class="container section-padding">
+    <section class="product-detail-section">
+        <div class="product-image-gallery">
+            {% if product.image_url == 'placeholder_div' %}
+            <div class="main-product-image product-image-placeholder"><span>{{ product.brand }}<br>{{ product.name }}</span></div>
+            {% else %}
+            <img src="{{ product.image_url }}" alt="Image of {{ product.name }}" class="main-product-image">
+            {% endif %}
+            {# Placeholder for future thumbnails
+            <div class="product-thumbnails">
+                <img src="{{ product.image_url }}" alt="Thumbnail 1" class="active-thumb">
+                <img src="/static/images/thumb-placeholder.png" alt="Thumbnail 2">
+            </div> #}
         </div>
+        <div class="product-info">
+            <p class="brand">{{ product.brand }}</p>
+            <h1>{{ product.name }}</h1>
+            <p class="price">${{ "%.2f"|format(product.price) }}</p>
 
-        <div class="specifications">
-            <h3>Specifications</h3>
-            <ul>
-                {% for spec, value in product.specifications.items() %}
-                <li><strong>{{ spec|capitalize }}:</strong> {{ value }}</li>
-                {% endfor %}
-            </ul>
+            <div class="description">
+                <h3>Product Description</h3>
+                <p>{{ product.description }}</p>
+            </div>
+
+            <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post" class="add-to-cart-form">
+                <div class="form-group quantity-selector">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" class="quantity-input">
+                </div>
+                <button type="submit" class="btn btn-add-to-cart">Add to Cart</button>
+                {# <button type="button" class="btn btn-icon btn-wishlist-detail" aria-label="Add to Wishlist">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </button> #}
+            </form>
+
+            <div class="specifications">
+                <h3>Specifications</h3>
+                <ul>
+                    {% for spec, value in product.specifications.items() %}
+                    <li><strong>{{ spec|capitalize }}:</strong> <span>{{ value }}</span></li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
+    </section>
+</div>
 
-        <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="post">
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" name="quantity" value="1" min="1">
-            <button type="submit" class="btn btn-add-to-cart">Add to Cart</button>
-        </form>
-    </div>
-</section>
-
-<section class="related-products">
-    <h2>You Might Also Like</h2>
-    <div class="product-grid">
-        {% for related_product in related_products %}
-        <div class="product-card">
-            <img src="{{ related_product.image_url }}" alt="{{ related_product.name }}">
-            <h3>{{ related_product.name }}</h3>
-            <p class="price">${{ "%.2f"|format(related_product.price) }}</p>
-            <a href="{{ url_for('product_detail', product_id=related_product.id) }}" class="btn-view">View Details</a>
+<section class="related-products section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title">You Might Also Like</h2>
+        <div class="product-grid">
+            {% for related_product in related_products %}
+            <div class="product-card">
+                <a href="{{ url_for('product_detail', product_id=related_product.id) }}" class="product-image-link">
+                    {% if related_product.image_url == 'placeholder_div' %}
+                    <div class="product-image-placeholder"><span>{{ related_product.brand }}<br>Watch</span></div>
+                    {% else %}
+                    <img src="{{ related_product.image_url }}" alt="Image of {{ related_product.name }}">
+                    {% endif %}
+                </a>
+                <div class="product-card-content">
+                     <p class="brand-name">{{ related_product.brand }}</p>
+                    <h3><a href="{{ url_for('product_detail', product_id=related_product.id) }}">{{ related_product.name }}</a></h3>
+                    <p class="price">${{ "%.2f"|format(related_product.price) }}</p>
+                    <div class="product-card-actions">
+                         <a href="{{ url_for('product_detail', product_id=related_product.id) }}" class="btn btn-view">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="empty-grid-message">No related products to show at the moment.</p>
+            {% endfor %}
         </div>
-        {% else %}
-        <p>No related products to show.</p>
-        {% endfor %}
     </div>
 </section>
 {% endblock %}

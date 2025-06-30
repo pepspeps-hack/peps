@@ -1,27 +1,80 @@
 {% extends "base.html" %}
 
-{% block title %}Homepage - Luxury Watches{% endblock %}
+{% block title %}Homepage - LuxeWatch Emporium{% endblock %}
 
 {% block content %}
 <section class="hero">
-    <h1>Discover Timeless Elegance</h1>
-    <p>Explore our exclusive collection of luxury watches.</p>
-    <a href="#" class="btn">Shop Now</a>
-</section>
-
-<section class="featured-products">
-    <h2>Featured Watches</h2>
-    <div class="product-grid">
-        {% for product in products %}
-        <div class="product-card">
-            <img src="{{ product.image_url }}" alt="{{ product.name }}">
-            <h3>{{ product.name }}</h3>
-            <p class="price">${{ "%.2f"|format(product.price) }}</p>
-            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn-view">View Details</a>
-        </div>
-        {% else %}
-        <p>No featured products available at the moment.</p>
-        {% endfor %}
+    <div class="container">
+        <h1>Discover Timeless Elegance</h1>
+        <p>Explore our exclusive collection of the world's most prestigious timepieces.</p>
+        <a href="#" class="btn btn-primary hero-btn">Shop The Collection</a>
     </div>
 </section>
+
+<section class="featured-products section-padding">
+    <div class="container">
+        <h2 class="section-title">Featured Timepieces</h2>
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
+                    {% if product.image_url == 'placeholder_div' %}
+                    <div class="product-image-placeholder"><span>{{ product.brand }}<br>Watch</span></div>
+                    {% else %}
+                    <img src="{{ product.image_url }}" alt="Image of {{ product.name }}">
+                    {% endif %}
+                </a>
+                <div class="product-card-content">
+                    <p class="brand-name">{{ product.brand }}</p>
+                    <h3><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h3>
+                    <p class="price">${{ "%.2f"|format(product.price) }}</p>
+                    <div class="product-card-actions">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-view">View Details</a>
+                        {# <button class="btn btn-icon btn-wishlist" aria-label="Add to Wishlist">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        </button> #}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="empty-grid-message">No featured products available at the moment. Please check back soon.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# Placeholder for additional sections like "New Arrivals" or "Brands" #}
+<section class="new-arrivals section-padding bg-light">
+    <div class="container">
+        <h2 class="section-title">New Arrivals</h2>
+        {# Simplified product grid or different layout for variety #}
+        <div class="product-grid">
+             {% for product in products|slice:"0:2" %} {# Displaying first 2 products as new arrivals for demo #}
+            <div class="product-card">
+                 <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
+                    {% if product.image_url == 'placeholder_div' %}
+                    <div class="product-image-placeholder"><span>{{ product.brand }}<br>Watch</span></div>
+                    {% else %}
+                    <img src="{{ product.image_url }}" alt="Image of {{ product.name }}">
+                    {% endif %}
+                </a>
+                <div class="product-card-content">
+                    <p class="brand-name">{{ product.brand }}</p>
+                    <h3><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h3>
+                    <p class="price">${{ "%.2f"|format(product.price) }}</p>
+                     <div class="product-card-actions">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-view">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="empty-grid-message">Fresh arrivals coming soon!</p>
+            {% endfor %}
+        </div>
+        <div class="text-center" style="margin-top: 30px;">
+            <a href="#" class="btn btn-secondary">Explore All New Watches</a>
+        </div>
+    </div>
+</section>
+
 {% endblock %}

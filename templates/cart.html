@@ -1,60 +1,92 @@
 {% extends "base.html" %}
 
-{% block title %}Shopping Cart - Luxury Watches{% endblock %}
+{% block title %}Shopping Cart - LuxeWatch Emporium{% endblock %}
 
 {% block content %}
-<section class="shopping-cart-section">
-    <h1>Your Shopping Cart</h1>
+<section class="shopping-cart-section section-padding">
+    <div class="container">
+        <h1 class="section-title">Your Shopping Cart</h1>
 
-    {% if cart_items %}
-    <table class="cart-table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Remove</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in cart_items %}
-            <tr>
-                <td>
-                    <div class="cart-product-info">
-                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-product-image">
-                        <div>
-                            <p><strong>{{ item.product.name }}</strong></p>
-                            <small>Brand: {{ item.product.brand }}</small>
-                        </div>
+        {% if cart_items %}
+        <div class="cart-layout">
+            <div class="cart-items-container">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_items %}
+                        <tr>
+                            <td class="cart-item-image">
+                                <a href="{{ url_for('product_detail', product_id=item.product.id) }}">
+                                    {% if item.product.image_url == 'placeholder_div' %}
+                                    <div class="cart-product-image product-image-placeholder"><span>Watch</span></div>
+                                    {% else %}
+                                    <img src="{{ item.product.image_url }}" alt="Image of {{ item.product.name }}" class="cart-product-image">
+                                    {% endif %}
+                                </a>
+                            </td>
+                            <td class="cart-item-details">
+                                <div class="cart-product-info">
+                                    <p><strong><a href="{{ url_for('product_detail', product_id=item.product.id) }}">{{ item.product.name }}</a></strong></p>
+                                    <small>Brand: {{ item.product.brand }}</small>
+                                    {# <small>Item ID: {{ item.product.id }}</small> #}
+                                </div>
+                            </td>
+                            <td>${{ "%.2f"|format(item.product.price) }}</td>
+                            <td>
+                                <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="update-quantity-form">
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                                    <button type="submit" class="btn btn-update btn-small">Update</button>
+                                </form>
+                            </td>
+                            <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
+                            <td>
+                                <form action="{{ url_for('remove_from_cart', product_id=item.product.id) }}" method="post">
+                                    <button type="submit" class="btn-remove" aria-label="Remove {{ item.product.name }} from cart">&times;</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cart-summary-container">
+                <div class="cart-summary">
+                    <h2>Summary</h2>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ "%.2f"|format(cart_total) }}</span>
                     </div>
-                </td>
-                <td>${{ "%.2f"|format(item.product.price) }}</td>
-                <td>
-                    <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="update-quantity-form">
-                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
-                        <button type="submit" class="btn-update">Update</button>
-                    </form>
-                </td>
-                <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
-                <td>
-                    <form action="{{ url_for('remove_from_cart', product_id=item.product.id) }}" method="post">
-                        <button type="submit" class="btn-remove">&times;</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span><em>Calculated at checkout</em></span>
+                    </div>
+                    <hr>
+                    <div class="summary-row total-row">
+                        <h3>Order Total</h3>
+                        <h3>${{ "%.2f"|format(cart_total) }}</h3>
+                    </div>
+                    <a href="{{ url_for('checkout') }}" class="btn btn-checkout btn-full-width">Proceed to Checkout</a>
+                    <a href="{{url_for('index')}}" class="btn btn-secondary btn-full-width continue-shopping-btn">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
 
-    <div class="cart-summary">
-        <h3>Cart Total: ${{ "%.2f"|format(cart_total) }}</h3>
-        <a href="{{ url_for('checkout') }}" class="btn btn-checkout">Proceed to Checkout</a>
+        {% else %}
+        <div class="cart-empty-message">
+            <p>Your shopping cart is currently empty.</p>
+            <p>Discover our exquisite collection and find your next timeless piece.</p>
+            <a href="{{ url_for('index') }}" class="btn">Explore Watches</a>
+        </div>
+        {% endif %}
     </div>
-
-    {% else %}
-    <p>Your cart is currently empty.</p>
-    <a href="#" class="btn">Continue Shopping</a>
-    {% endif %}
 </section>
 {% endblock %}

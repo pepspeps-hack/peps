@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Luxury Watches{% endblock %}</title>
+    <title>{% block title %}LuxeWatch Emporium{% endblock %}</title>
+    <!-- Google Fonts: Playfair Display for headings, Lato for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head_extra %}{% endblock %}
 </head>
 <body>
     <header>
@@ -12,13 +17,27 @@
             <div class="logo">
                 <a href="{{ url_for('index') }}">LUXEWATCH</a>
             </div>
-            <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="#">Shop</a></li>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="{{ url_for('cart') }}">Cart</a></li>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+                <li><a href="#" class="nav-link">Shop</a></li> {# Assuming a future /shop route #}
+                <li><a href="#" class="nav-link">Brands</a></li>
+                <li><a href="#" class="nav-link">About Us</a></li>
+                <li><a href="#" class="nav-link">Contact</a></li>
+                <li class="nav-icon"><a href="{{ url_for('cart') }}" class="nav-link {% if request.endpoint == 'cart' %}active{% endif %}" aria-label="Shopping Cart">
+                    {# Basic SVG Cart Icon - can be replaced with a better one #}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-shopping-cart"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    {% if session.get('cart') and session.get('cart')|length > 0 %}
+                        <span class="cart-count">{{ session['cart']|sum_quantities }}</span>
+                    {% endif %}
+                </a></li>
+                {# Conceptual User Icon #}
+                <li class="nav-icon"><a href="#" class="nav-link" aria-label="User Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </a></li>
             </ul>
+            <button class="mobile-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="hamburger-icon"></span>
+            </button>
         </nav>
     </header>
 
@@ -27,9 +46,41 @@
     </main>
 
     <footer>
-        <p>&copy; 2023 LuxeWatch. All rights reserved.</p>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section about">
+                    <h3 class="logo-text">LUXEWATCH</h3>
+                    <p>
+                        Discover timeless elegance and precision with our curated collection of the world's finest luxury timepieces.
+                    </p>
+                </div>
+                <div class="footer-section links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Shop Collection</a></li>
+                        <li><a href="#">New Arrivals</a></li>
+                        <li><a href="#">Customer Service</a></li>
+                        <li><a href="#">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section contact-form">
+                    <h3>Contact Us</h3>
+                    <p>Stay updated with our latest collections and offers.</p>
+                    <form action="#" method="post">
+                        <input type="email" name="email" class="text-input contact-input" placeholder="Your email address...">
+                        <button type="submit" class="btn btn-small">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; {{ SCRIPT_LOAD_TIME.strftime('%Y') }} LuxeWatch Emporium | All Rights Reserved. Crafted with Precision.
+            </div>
+        </div>
     </footer>
-
+    {# A general spot for JavaScript files, main.js could be for global scripts #}
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts_extra %}{% endblock %}
 </body>
 </html>

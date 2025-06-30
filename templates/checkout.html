@@ -1,160 +1,229 @@
 {% extends "base.html" %}
 
-{% block title %}Checkout - Luxury Watches{% endblock %}
+{% block title %}Checkout - LuxeWatch Emporium{% endblock %}
 
 {% block content %}
-<section class="checkout-section">
-    <h1>Checkout</h1>
+<section class="checkout-section section-padding">
+    <div class="container">
+        <h1 class="section-title">Secure Checkout</h1>
 
-    <div class="checkout-grid">
-        <div class="order-summary">
-            <h2>Order Summary</h2>
+        <div class="checkout-grid">
             {% if cart_items %}
-            <ul>
-                {% for item in cart_items %}
-                <li>
-                    <span>{{ item.product.name }} (x{{ item.quantity }})</span>
-                    <span>${{ "%.2f"|format(item.product.price * item.quantity) }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-            <hr>
-            <p class="total"><strong>Total: ${{ "%.2f"|format(cart_total) }}</strong></p>
-            {% else %}
-            <p>Your cart is empty. Please add items to your cart before proceeding to checkout.</p>
-            <a href="#" class="btn">Return to Shop</a>
-            {% endif %}
-        </div>
+            <div class="checkout-form-container">
+                <form action="{{ url_for('process_checkout') }}" method="post" class="checkout-form">
 
-        {% if cart_items %}
-        <div class="checkout-form-container">
-            <h2>Shipping & Billing Information</h2>
-            <form action="{{ url_for('process_checkout') }}" method="post" class="checkout-form">
-
-                <fieldset>
-                    <legend>Shipping Address</legend>
-                    <div class="form-group">
-                        <label for="shipping_name">Full Name</label>
-                        <input type="text" id="shipping_name" name="shipping_name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="shipping_address1">Address Line 1</label>
-                        <input type="text" id="shipping_address1" name="shipping_address1" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="shipping_address2">Address Line 2 (Optional)</label>
-                        <input type="text" id="shipping_address2" name="shipping_address2">
-                    </div>
-                    <div class="form-group">
-                        <label for="shipping_city">City</label>
-                        <input type="text" id="shipping_city" name="shipping_city" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="shipping_state">State/Province</label>
-                        <input type="text" id="shipping_state" name="shipping_state" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="shipping_zip">ZIP/Postal Code</label>
-                        <input type="text" id="shipping_zip" name="shipping_zip" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="shipping_country">Country</label>
-                        <input type="text" id="shipping_country" name="shipping_country" required>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Billing Information</legend>
-                    <div class="form-group">
-                        <input type="checkbox" id="same_as_shipping" name="same_as_shipping">
-                        <label for="same_as_shipping">Billing address is the same as shipping</label>
-                    </div>
-
-                    <div id="billing_address_fields">
-                        <div class="form-group">
-                            <label for="billing_name">Full Name</label>
-                            <input type="text" id="billing_name" name="billing_name">
+                    <fieldset>
+                        <legend>Shipping Address</legend>
+                        <div class="form-row">
+                            <div class="form-group half-width">
+                                <label for="shipping_fname">First Name</label>
+                                <input type="text" id="shipping_fname" name="shipping_fname" required>
+                            </div>
+                            <div class="form-group half-width">
+                                <label for="shipping_lname">Last Name</label>
+                                <input type="text" id="shipping_lname" name="shipping_lname" required>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="billing_address1">Address Line 1</label>
-                            <input type="text" id="billing_address1" name="billing_address1">
+                            <label for="shipping_address1">Address Line 1</label>
+                            <input type="text" id="shipping_address1" name="shipping_address1" placeholder="Street address, P.O. box, etc." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="shipping_address2">Address Line 2 (Optional)</label>
+                            <input type="text" id="shipping_address2" name="shipping_address2" placeholder="Apartment, suite, unit, building, floor, etc.">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half-width">
+                                <label for="shipping_city">City</label>
+                                <input type="text" id="shipping_city" name="shipping_city" required>
+                            </div>
+                            <div class="form-group quarter-width">
+                                <label for="shipping_state">State/Province</label>
+                                <input type="text" id="shipping_state" name="shipping_state" required>
+                            </div>
+                            <div class="form-group quarter-width">
+                                <label for="shipping_zip">ZIP/Postal Code</label>
+                                <input type="text" id="shipping_zip" name="shipping_zip" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="shipping_country">Country</label>
+                            <input type="text" id="shipping_country" name="shipping_country" value="United States" required> {# Default or select #}
                         </div>
                          <div class="form-group">
-                            <label for="billing_address2">Address Line 2 (Optional)</label>
-                            <input type="text" id="billing_address2" name="billing_address2">
+                            <label for="shipping_phone">Phone Number (Optional)</label>
+                            <input type="tel" id="shipping_phone" name="shipping_phone" placeholder="For delivery updates">
                         </div>
-                        <div class="form-group">
-                            <label for="billing_city">City</label>
-                            <input type="text" id="billing_city" name="billing_city">
-                        </div>
-                        <div class="form-group">
-                            <label for="billing_state">State/Province</label>
-                            <input type="text" id="billing_state" name="billing_state">
-                        </div>
-                        <div class="form-group">
-                            <label for="billing_zip">ZIP/Postal Code</label>
-                            <input type="text" id="billing_zip" name="billing_zip">
-                        </div>
-                        <div class="form-group">
-                            <label for="billing_country">Country</label>
-                            <input type="text" id="billing_country" name="billing_country">
-                        </div>
-                    </div>
-                </fieldset>
+                    </fieldset>
 
-                <fieldset>
-                    <legend>Payment Information</legend>
-                    <!-- Placeholder for payment gateway integration (e.g., Stripe Elements, PayPal) -->
-                    <div class="form-group">
-                        <label for="card_number">Card Number</label>
-                        <input type="text" id="card_number" name="card_number" placeholder="**** **** **** ****" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="expiry_date">Expiry Date</label>
-                        <input type="text" id="expiry_date" name="expiry_date" placeholder="MM/YY" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cvv">CVV</label>
-                        <input type="text" id="cvv" name="cvv" placeholder="***" required>
-                    </div>
-                </fieldset>
+                    <fieldset>
+                        <legend>Billing Information</legend>
+                        <div class="form-group">
+                            <input type="checkbox" id="same_as_shipping" name="same_as_shipping" checked>
+                            <label for="same_as_shipping">Billing address is the same as shipping address</label>
+                        </div>
 
-                <button type="submit" class="btn btn-place-order">Place Order</button>
-            </form>
+                        <div id="billing_address_fields" style="display: none;"> {/* Hidden by default */}
+                             <div class="form-row">
+                                <div class="form-group half-width">
+                                    <label for="billing_fname">First Name</label>
+                                    <input type="text" id="billing_fname" name="billing_fname">
+                                </div>
+                                <div class="form-group half-width">
+                                    <label for="billing_lname">Last Name</label>
+                                    <input type="text" id="billing_lname" name="billing_lname">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="billing_address1">Address Line 1</label>
+                                <input type="text" id="billing_address1" name="billing_address1">
+                            </div>
+                            <div class="form-group">
+                                <label for="billing_address2">Address Line 2 (Optional)</label>
+                                <input type="text" id="billing_address2" name="billing_address2">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group half-width">
+                                    <label for="billing_city">City</label>
+                                    <input type="text" id="billing_city" name="billing_city">
+                                </div>
+                                <div class="form-group quarter-width">
+                                    <label for="billing_state">State/Province</label>
+                                    <input type="text" id="billing_state" name="billing_state">
+                                </div>
+                                <div class="form-group quarter-width">
+                                    <label for="billing_zip">ZIP/Postal Code</label>
+                                    <input type="text" id="billing_zip" name="billing_zip">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="billing_country">Country</label>
+                                <input type="text" id="billing_country" name="billing_country">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Payment Information</legend>
+                        <p class="payment-info-text">Securely enter your payment details. We accept all major credit cards.</p>
+                        {# This is a conceptual placeholder for a payment gateway integration like Stripe Elements #}
+                        <div class="form-group">
+                            <label for="card_name">Name on Card</label>
+                            <input type="text" id="card_name" name="card_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="card_number">Card Number</label>
+                            <input type="text" id="card_number" name="card_number" placeholder="•••• •••• •••• ••••" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half-width">
+                                <label for="expiry_date">Expiry Date</label>
+                                <input type="text" id="expiry_date" name="expiry_date" placeholder="MM / YY" required>
+                            </div>
+                            <div class="form-group half-width">
+                                <label for="cvv">CVV/CVC</label>
+                                <input type="text" id="cvv" name="cvv" placeholder="•••" required>
+                            </div>
+                        </div>
+                        <div class="payment-icons">
+                            {# Placeholder for card icons (Visa, Mastercard, etc.) #}
+                            <p><small>Accepted Cards: Visa, Mastercard, Amex (Illustrative)</small></p>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="btn btn-place-order btn-full-width">Place Your Order</button>
+                </form>
+            </div>
+
+            <div class="order-summary-container">
+                <div class="order-summary">
+                    <h2>Order Summary</h2>
+                    {% if cart_items %}
+                    <ul class="order-summary-items">
+                        {% for item in cart_items %}
+                        <li class="order-summary-item">
+                            {% if item.product.image_url == 'placeholder_div' %}
+                            <div class="summary-item-image product-image-placeholder"><span>Watch</span></div>
+                            {% else %}
+                            <img src="{{ item.product.image_url }}" alt="{{item.product.name}}" class="summary-item-image">
+                            {% endif %}
+                            <div class="summary-item-info">
+                                <span class="summary-item-name">{{ item.product.name }} (x{{ item.quantity }})</span>
+                                <span class="summary-item-brand">{{ item.product.brand }}</span>
+                            </div>
+                            <span class="summary-item-price">${{ "%.2f"|format(item.product.price * item.quantity) }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <hr>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ "%.2f"|format(cart_total) }}</span>
+                    </div>
+                     <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>Free</span> {# Or calculated #}
+                    </div>
+                    {# <div class="summary-row">
+                        <span>Taxes (Estimated)</span>
+                        <span>$XX.XX</span> Placeholder #}
+                    {# </div> #}
+                    <hr>
+                    <div class="summary-row total-row">
+                        <p class="total"><strong>Order Total</strong></p>
+                        <p class="total"><strong>${{ "%.2f"|format(cart_total) }}</strong></p> {# Assuming cart_total is final for now #}
+                    </div>
+                    {% else %}
+                    <p>Your cart is empty.</p>
+                    {% endif %}
+                </div>
+                 <div class="checkout-help">
+                    <h4>Need Assistance?</h4>
+                    <p>Our expert concierges are available to help you. Call us at <a href="tel:+1800LUXWATCH">1-800-LUX-WATCH</a> or <a href="#">chat live</a>.</p>
+                </div>
+            </div>
+            {% else %}
+             <div class="cart-empty-message" style="grid-column: 1 / -1;">
+                <p>Your cart is empty. Please add items to your cart before proceeding to checkout.</p>
+                <a href="{{ url_for('index') }}" class="btn">Return to Shop</a>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </section>
+{% endblock %}
 
+{% block scripts_extra %}
 <script>
-    // Basic script to toggle billing address fields
-    const sameAsShippingCheckbox = document.getElementById('same_as_shipping');
-    const billingAddressFields = document.getElementById('billing_address_fields');
-    const billingInputs = billingAddressFields.querySelectorAll('input');
+    document.addEventListener('DOMContentLoaded', function() {
+        const sameAsShippingCheckbox = document.getElementById('same_as_shipping');
+        const billingAddressFieldsContainer = document.getElementById('billing_address_fields');
+        const billingInputs = billingAddressFieldsContainer.querySelectorAll('input');
 
-    sameAsShippingCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            billingAddressFields.style.display = 'none';
-            billingInputs.forEach(input => input.required = false);
-        } else {
-            billingAddressFields.style.display = 'block';
-            billingInputs.forEach(input => {
-                if (input.id !== 'billing_address2') { // Address line 2 is optional
-                    input.required = true;
-                }
-            });
+        function toggleBillingFields() {
+            if (sameAsShippingCheckbox.checked) {
+                billingAddressFieldsContainer.style.display = 'none';
+                billingInputs.forEach(input => input.required = false);
+            } else {
+                billingAddressFieldsContainer.style.display = 'block';
+                // Only set required for fields that should be mandatory if billing is different
+                // e.g. Name, Address Line 1, City, State, Zip, Country
+                // For simplicity, we'll require all except address line 2 for now if visible
+                billingInputs.forEach(input => {
+                    if (input.id !== 'billing_address2') {
+                        input.required = true;
+                    } else {
+                        input.required = false;
+                    }
+                });
+            }
+        }
+
+        if (sameAsShippingCheckbox) {
+            sameAsShippingCheckbox.addEventListener('change', toggleBillingFields);
+            // Initialize
+            toggleBillingFields();
         }
     });
-    // Initialize based on checkbox state (e.g., if it's checked by default via backend)
-    if (sameAsShippingCheckbox.checked) {
-        billingAddressFields.style.display = 'none';
-        billingInputs.forEach(input => input.required = false);
-    } else {
-         billingInputs.forEach(input => {
-            if (input.id !== 'billing_address2') {
-                 input.required = true;
-            }
-        });
-    }
 </script>
 {% endblock %}
