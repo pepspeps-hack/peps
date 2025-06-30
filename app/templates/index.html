@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - E-commerce Site{% endblock %}
+
+{% block content %}
+    <h1>Welcome to our E-commerce Site!</h1>
+    <p>Browse our <a href="{{ url_for('products') }}">products</a>.</p>
+{% endblock %}

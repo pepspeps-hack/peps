@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Products - E-commerce Site{% endblock %}
+
+{% block content %}
+    <h1>Our Products</h1>
+    <div class="product-list">
+        {% if products %}
+            {% for product in products %}
+                <div class="product-item" style="border: 1px solid #ccc; margin-bottom: 10px; padding: 10px;">
+                    <!-- Placeholder for image -->
+                    <img src="{{ url_for('static', filename='images/' + product.image_file if product.image_file else 'images/default_product.jpg') }}" alt="{{ product.name }}" style="max-width: 100px; max-height: 100px; display: block; margin-bottom: 5px;">
+                    <h2>{{ product.name }}</h2>
+                    <p>Price: ${{ "%.2f"|format(product.price) }}</p>
+                    {% if product.stock > 0 %}
+                        <p>In Stock: {{ product.stock }}</p>
+                    {% else %}
+                        <p style="color: red;">Out of Stock</p>
+                    {% endif %}
+                    <a href="{{ url_for('product_detail', product_id=product.id) }}">View Details</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No products available at the moment.</p>
+        {% endif %}
+    </div>
+{% endblock %}

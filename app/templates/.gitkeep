@@ -1,0 +1,2 @@
+# This directory will hold HTML templates for our Flask application.
+# The .gitkeep file ensures the directory is tracked by git even if it's empty.
