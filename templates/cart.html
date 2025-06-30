@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - Luxury Watches{% endblock %}
+
+{% block content %}
+<section class="shopping-cart-section">
+    <h1>Your Shopping Cart</h1>
+
+    {% if cart_items %}
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>
+                    <div class="cart-product-info">
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-product-image">
+                        <div>
+                            <p><strong>{{ item.product.name }}</strong></p>
+                            <small>Brand: {{ item.product.brand }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>${{ "%.2f"|format(item.product.price) }}</td>
+                <td>
+                    <form action="{{ url_for('update_cart', product_id=item.product.id) }}" method="post" class="update-quantity-form">
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="quantity-input">
+                        <button type="submit" class="btn-update">Update</button>
+                    </form>
+                </td>
+                <td>${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
+                <td>
+                    <form action="{{ url_for('remove_from_cart', product_id=item.product.id) }}" method="post">
+                        <button type="submit" class="btn-remove">&times;</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="cart-summary">
+        <h3>Cart Total: ${{ "%.2f"|format(cart_total) }}</h3>
+        <a href="{{ url_for('checkout') }}" class="btn btn-checkout">Proceed to Checkout</a>
+    </div>
+
+    {% else %}
+    <p>Your cart is currently empty.</p>
+    <a href="#" class="btn">Continue Shopping</a>
+    {% endif %}
+</section>
+{% endblock %}
