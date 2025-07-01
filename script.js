@@ -99,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function performOcr(imageFile) {
         console.log("Starting OCR with Gemini...");
-        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' || OPENROUTER_API_KEY === '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') {
-            throw new Error("OpenRouter API Key is niet ingesteld of is nog de placeholder in script.js. Vervang deze met je eigen geldige API key.");
+        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
+            throw new Error("OpenRouter API Key is niet ingesteld of is een generieke placeholder in script.js. Vul je geldige API key in.");
         }
 
         const base64Image = await imageToBase64(imageFile);
@@ -167,8 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function processSingleMenuItemWithMistral(itemText, targetLanguage) {
         console.log(`Processing item "${itemText}" with Mistral Nemo for language: ${targetLanguage}`);
-        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' || OPENROUTER_API_KEY === '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') {
-            throw new Error("OpenRouter API Key is niet ingesteld of is nog de placeholder in script.js. Vervang deze met je eigen geldige API key.");
+        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
+            throw new Error("OpenRouter API Key is niet ingesteld of is een generieke placeholder in script.js. Vul je geldige API key in.");
         }
 
         const systemPrompt = `Je bent een gespecialiseerde AI-assistent voor het analyseren en uitleggen van restaurantmenu-items.
@@ -260,8 +260,8 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
         const { vertaald_naam, original_name, keuken, ingredienten } = processedTextData;
         console.log(`Generating image for "${vertaald_naam}" with Llama 3.2 Vision...`);
 
-        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' || OPENROUTER_API_KEY === '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') {
-            throw new Error("OpenRouter API Key is niet ingesteld of is nog de placeholder in script.js. Vervang deze met je eigen geldige API key.");
+        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
+            throw new Error("OpenRouter API Key is niet ingesteld of is een generieke placeholder in script.js. Vul je geldige API key in.");
         }
 
         // Probeer een generieke garnituur of laat het weg als het te complex wordt.
