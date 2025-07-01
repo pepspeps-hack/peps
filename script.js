@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stap 3 & 4: Verwerk elk menu item (tekstverwerking & beeldgeneratie)
             // Nu eerst alleen tekstverwerking, beeldgeneratie komt in de volgende stap.
             for (const itemText of menuItems) {
-                const processedTextData = await processSingleMenuItemWithMistral(itemText, targetLanguage);
+                const processedTextData = await processSingleMenuItemWithGemini(itemText, targetLanguage); // Hernoemde functie
 
                 let imageUrl = `https://via.placeholder.com/300x200.png?text=Beeld+voor+${(processedTextData.vertaald_naam || itemText).replace(/\s+/g, '+')}`; // Default placeholder
                 if (processedTextData && !processedTextData.uitleg.startsWith("Fout bij verwerken")) { // Alleen proberen als tekstverwerking succesvol was
@@ -163,8 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return ocrText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     }
 
-    async function processSingleMenuItemWithMistral(itemText, targetLanguage) {
-        console.log(`Processing item "${itemText}" with Mistral Nemo for language: ${targetLanguage}`);
+    async function processSingleMenuItemWithGemini(itemText, targetLanguage) { // Functie hernoemd
+        console.log(`Processing item "${itemText}" with Gemini Flash for language: ${targetLanguage}`); // Log aangepast
         // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
 
         const systemPrompt = `Je bent een gespecialiseerde AI-assistent voor het analyseren en uitleggen van restaurantmenu-items.
@@ -184,8 +184,8 @@ Doeltaal voor vertaling en uitleg: ${targetLanguage}.
 Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system prompt.`;
 
         const payload = {
-            model: "mistralai/mistral-7b-instruct:free", // Mistral Nemo (gratis versie)
-            response_format: { type: "json_object" }, // Vraag om JSON output
+            model: "google/gemini-2.0-flash-exp:free", // Model gewijzigd naar Gemini
+            response_format: { type: "json_object" }, // Vraag om JSON output (hopelijk ondersteund)
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
@@ -212,34 +212,43 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
             }
 
             const data = await response.json();
-            console.log(`Mistral API Response for "${itemText}":`, data);
+            console.log(`Gemini API Response for "${itemText}" (Text Processing):`, data); // Log aangepast
 
             if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
                 try {
                     // De content zou al JSON moeten zijn vanwege response_format, maar voor de zekerheid parsen.
-                    const jsonResponse = JSON.parse(data.choices[0].message.content);
+                    // Sommige modellen stoppen de JSON in een ```json ... ``` block.
+                    let contentStr = data.choices[0].message.content;
+                    if (contentStr.startsWith("```json")) {
+                        contentStr = contentStr.substring(7, contentStr.length - 3).trim();
+                    } else if (contentStr.startsWith("```")) {
+                         contentStr = contentStr.substring(3, contentStr.length - 3).trim();
+                    }
+
+                    const jsonResponse = JSON.parse(contentStr);
                     // Valideer of de verwachte velden aanwezig zijn
-                    if (!jsonResponse.original_name || !jsonResponse.vertaald_naam || !jsonResponse.uitleg || !jsonResponse.ingredienten) {
-                        console.warn("Mistral response mist verwachte JSON velden:", jsonResponse);
+                    if (typeof jsonResponse.original_name === 'undefined' || typeof jsonResponse.vertaald_naam === 'undefined' ||
+                        typeof jsonResponse.uitleg === 'undefined' || typeof jsonResponse.ingredienten === 'undefined') {
+                        console.warn("Gemini response mist verwachte JSON velden:", jsonResponse);
                         // Probeer toch iets terug te geven met de originele tekst als fallback
                         return {
                             original_name: itemText,
-                            vertaald_naam: `Kon niet verwerken: ${itemText}`,
-                            uitleg: "Fout bij parsen van AI antwoord.",
+                            vertaald_naam: `Kon niet verwerken met Gemini: ${itemText}`,
+                            uitleg: "Fout bij parsen van Gemini AI antwoord (missende velden).",
                             ingredienten: [],
                             keuken: ""
                         };
                     }
                     return jsonResponse;
                 } catch (e) {
-                    console.error("Fout bij het parsen van Mistral JSON response:", e, data.choices[0].message.content);
-                    throw new Error("Antwoord van Mistral kon niet als JSON worden verwerkt.");
+                    console.error("Fout bij het parsen van Gemini JSON response:", e, data.choices[0].message.content);
+                    throw new Error("Antwoord van Gemini kon niet als JSON worden verwerkt.");
                 }
             } else {
-                throw new Error("Geen geldige content ontvangen van Mistral API.");
+                throw new Error("Geen geldige content ontvangen van Gemini API (Text Processing).");
             }
         } catch (error) {
-            console.error(`Fout tijdens Mistral API call for "${itemText}":`, error);
+            console.error(`Fout tijdens Gemini API call for "${itemText}" (Text Processing):`, error); // Log aangepast
             // Geef een foutobject terug zodat de loop door kan gaan met andere items
             return {
                 original_name: itemText,
