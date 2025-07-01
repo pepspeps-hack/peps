@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Placeholder for OpenRouter API Key - !!! VUL HIER JE EIGEN KEY IN !!!
     // LET OP: Het is veiliger om de API key via een backend proxy te laten lopen voor een productie applicatie.
     // Voor dit prototype wordt het direct gebruikt, wat een veiligheidsrisico kan zijn.
-    const OPENROUTER_API_KEY = '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'; // Jouw API Key
+    const OPENROUTER_API_KEY = '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'; // Nieuwe API Key
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
     menuImageUpload.addEventListener('change', () => {
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const base64Image = await imageToBase64(imageFile);
 
         const payload = {
-            model: "google/gemini-flash-1.5", // Model voor OCR
+            model: "google/gemini-2.0-flash-exp:free", // Gecorrigeerd OCR Model
             messages: [
                 {
                     role: "user",
