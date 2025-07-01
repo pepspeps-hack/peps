@@ -308,7 +308,7 @@ a:hover {
     border-bottom: 2px solid #f0c419;
 }
 
-.menu-item .placeholder-image-text {
+.menu-item .placeholder-image-text { /* Stijl voor placeholder tekst als afbeelding faalt */
     width: 100%;
     height: 200px;
     display: flex;
@@ -318,6 +318,8 @@ a:hover {
     color: #777;
     font-style: italic;
     border-bottom: 2px solid #f0c419;
+    padding: 10px; /* Zorgt dat tekst niet tegen de randen plakt */
+    text-align: center;
 }
 
 

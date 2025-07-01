@@ -2,16 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuImageUpload = document.getElementById('menu-image-upload');
     const targetLanguageSelect = document.getElementById('target-language');
     const processMenuButton = document.getElementById('process-menu-button');
-    const loadingIndicator = document.getElementById('loading-indicator'); // Dit is nu de .loading-overlay
-    const errorMessageElement = document.getElementById('error-message'); // Dit is nu .error-display
-    const errorMessageTextElement = errorMessageElement.querySelector('span'); // Het span binnen de error-display
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const errorMessageElement = document.getElementById('error-message');
+    const errorMessageTextElement = errorMessageElement.querySelector('span');
     const menuItemsContainer = document.getElementById('menu-items-container');
     const fileNameDisplay = document.getElementById('file-name-display');
 
-    // Placeholder for OpenRouter API Key - !!! VUL HIER JE EIGEN KEY IN !!!
-    // LET OP: Het is veiliger om de API key via een backend proxy te laten lopen voor een productie applicatie.
-    // Voor dit prototype wordt het direct gebruikt, wat een veiligheidsrisico kan zijn.
-    const OPENROUTER_API_KEY = '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'; // Nieuwe API Key
+    const OPENROUTER_API_KEY = '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'; // Jouw API Key
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
     menuImageUpload.addEventListener('change', () => {
@@ -36,32 +33,59 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading(true);
 
         try {
-            // STAP 1: Converteer afbeelding naar Base64
-            const base64Image = await imageToBase64(imageFile);
-            console.log("Afbeelding geconverteerd naar Base64.");
+            // Stap 1: OCR
+            console.log("Attempting OCR...");
+            const ocrText = await performOcr(imageFile);
+            console.log("OCR Result:", ocrText);
 
-            // STAP 2: Roep Qwen aan om de afbeelding te bekijken en direct te vertalen
-            const vertaaldeTekst = await analyseerEnVertaalMenuMetQwen(base64Image, targetLanguage);
-            console.log("Vertaalde tekst van Qwen:", vertaaldeTekst);
-
-            if (!vertaaldeTekst || vertaaldeTekst.trim() === "") {
-                showError("Kon geen vertaalde tekst van het menu verkrijgen van Qwen. Het antwoord was leeg.");
-                showLoading(false);
+            if (!ocrText || ocrText.trim() === "") {
+                showError("Kon geen tekst uit de afbeelding extraheren. Probeer een duidelijkere foto.");
+                showLoading(false); // Stop loading als OCR faalt
                 return;
             }
 
-            // STAP 3: Toon het resultaat (de volledige vertaalde tekst)
-            displayVertaaldMenu(vertaaldeTekst);
+            // Stap 2: Parse menu items
+            const menuItems = parseMenuItems(ocrText);
+            if (menuItems.length === 0) {
+                showError("Kon geen individuele menu-items vinden in de tekst.");
+                showLoading(false); // Stop loading als parsen faalt
+                return;
+            }
+            console.log("Parsed Menu Items:", menuItems);
+
+            // Stap 3 & 4: Verwerk elk menu item (tekstverwerking & beeldgeneratie)
+            for (const itemText of menuItems) {
+                console.log(`Processing item: ${itemText}`);
+                const processedTextData = await processSingleMenuItemWithGemini(itemText, targetLanguage);
+
+                let imageUrl = `https://via.placeholder.com/300x200.png?text=Beeld+voor+${(processedTextData.vertaald_naam || itemText).replace(/\s+/g, '+')}`;
+
+                if (processedTextData && processedTextData.uitleg && !processedTextData.uitleg.startsWith("Fout bij verwerken") && !processedTextData.uitleg.startsWith("Kon niet verwerken")) {
+                    try {
+                        console.log(`Attempting image generation for: ${processedTextData.vertaald_naam || itemText}`);
+                        imageUrl = await generateImageWithQwen(processedTextData);
+                    } catch (imgError) {
+                        console.error("Kon afbeelding niet genereren voor:", processedTextData.vertaald_naam, imgError);
+                    }
+                } else {
+                    console.log(`Skipping image generation for "${itemText}" due to previous processing error or placeholder data.`);
+                }
+
+                displayMenuItem({
+                    ...processedTextData,
+                    image_url: imageUrl
+                });
+            }
 
         } catch (error) {
-            console.error("Fout tijdens verwerken (vereenvoudigde flow):", error);
+            console.error("Fout tijdens hoofdverwerking:", error);
             showError(`Er is een fout opgetreden: ${error.message}`);
         } finally {
             showLoading(false);
         }
     });
 
-    // --- Functies voor AI interactie (Aangepast voor vereenvoudigde flow) ---
+    // --- Functies voor AI interactie ---
 
     function imageToBase64(file) {
         return new Promise((resolve, reject) => {
@@ -72,322 +96,167 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function analyseerEnVertaalMenuMetQwen(base64Image, targetLanguage) {
-        console.log(`Menu analyseren en vertalen naar ${targetLanguage} met Qwen...`);
-        // Client-side API key check is verwijderd. Validatie gebeurt door OpenRouter.
-
-        const userPrompt = `Bekijk deze menukaart (afbeelding). Vertaal de volledige inhoud van dit menu naar het ${targetLanguage}. Geef alleen de vertaalde tekst terug, zonder extra opmerkingen, uitleg, of markdown-formattering.`;
-
+    async function performOcr(imageFile) {
+        console.log("Starting OCR with Gemini...");
+        const base64Image = await imageToBase64(imageFile);
         const payload = {
-            model: "qwen/qwq-32b:free", // Zoals gespecificeerd
+            model: "google/gemini-2.0-flash-exp:free",
             messages: [
                 {
                     role: "user",
                     content: [
-                        {
-                            type: "text",
-                            text: userPrompt
-                        },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: base64Image
-                            }
-                        }
+                        { type: "text", text: "Extraheer alle tekst van deze afbeelding van een menukaart. Geef alleen de herkende tekst terug, zonder extra opmerkingen of uitleg." },
+                        { type: "image_url", image_url: { url: base64Image } }
                     ]
                 }
             ],
-            max_tokens: 2000 // Ruimte voor potentieel veel tekst
+            max_tokens: 2000
         };
 
         try {
+            console.log("performOcr: Fetch call starten...");
             const response = await fetch(OPENROUTER_API_URL, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    // Optioneel: Voeg site URL en naam toe voor OpenRouter leaderboards
-                    // 'HTTP-Referer': 'YOUR_SITE_URL',
-                    // 'X-Title': 'YOUR_SITE_NAME'
-                },
+                headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            console.log("performOcr: Fetch response status:", response.status);
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => null); // Probeer error details te parsen
-                console.error("API Error Data:", errorData);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
+                const errorData = await response.json().catch(() => ({ error: "Kon error JSON niet parsen" }));
+                console.error("performOcr: API Error Data:", errorData);
+                throw new Error(`OCR API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData.error ? JSON.stringify(errorData.error) : 'Geen details'}`);
             }
-
             const data = await response.json();
-            console.log("Gemini API Response (OCR):", data);
-
+            console.log("performOcr: API Response Data:", JSON.stringify(data, null, 2));
             if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
                 return data.choices[0].message.content.trim();
             } else {
                 throw new Error("Geen geldige tekst ontvangen van OCR API.");
             }
         } catch (error) {
-            console.error("Fout tijdens OCR API call:", error);
-            throw error; // Gooi de error verder zodat het in de UI getoond kan worden
+            console.error("performOcr: Fout in try-catch block:", error);
+            throw error;
         }
     }
 
     function parseMenuItems(ocrText) {
-        // Simpele parser: split op nieuwe regels. Moet slimmer gemaakt worden.
-        return ocrText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        return ocrText.split('\n').map(line => line.trim()).filter(line => line.length > 2); // Iets langere regels om ruis te filteren
     }
 
-    async function processSingleMenuItemWithGemini(itemText, targetLanguage) { // Functie hernoemd
-        console.log(`Processing item "${itemText}" with Gemini Flash for language: ${targetLanguage}`); // Log aangepast
-        // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
-
-        const systemPrompt = `Je bent een gespecialiseerde AI-assistent voor het analyseren en uitleggen van restaurantmenu-items.
-Antwoord ALTIJD in een valide JSON-object. De structuur van het JSON-object moet zijn:
-{
-  "original_name": "DE ORIGINELE TEKST VAN HET MENU ITEM",
-  "vertaald_naam": "DE VERTALING VAN HET MENU ITEM NAAR DE DOELTAAL",
-  "uitleg": "EEN KORTE, EENVOUDIGE UITLEG VAN HET GERECHT IN DE DOELTAAL",
-  "ingredienten": ["HOOFDINGREDIËNT 1", "HOOFDINGREDIËNT 2", "..."],
-  "keuken": "DE KEUKEN (BIJV. ITALIAANS, MEXICAANS, ETC.) INDIEN AFLEIDBAAR, ANDERS LEEG LATEN"
-}
-Extraheer de informatie uitsluitend uit de gegeven menu-item tekst. Speculeer niet over ingrediënten of keuken als deze niet duidelijk zijn.
-Als een veld niet ingevuld kan worden op basis van de input, laat de string dan leeg of geef een lege array voor ingrediënten.`;
-
-        const userPrompt = `Analyseer het volgende menu-item: "${itemText}".
-Doeltaal voor vertaling en uitleg: ${targetLanguage}.
-Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system prompt.`;
-
+    async function processSingleMenuItemWithGemini(itemText, targetLanguage) {
+        console.log(`Processing item "${itemText}" with Gemini Flash for language: ${targetLanguage}`);
+        const systemPrompt = `Je bent een gespecialiseerde AI-assistent voor het analyseren en uitleggen van restaurantmenu-items. Antwoord ALTIJD in een valide JSON-object. De structuur: {"original_name": "...", "vertaald_naam": "...", "uitleg": "...", "ingredienten": ["..."], "keuken": "..."}. Extraheer info alleen uit de item tekst. Als een veld niet ingevuld kan worden, laat de string leeg of geef een lege array.`;
+        const userPrompt = `Analyseer het menu-item: "${itemText}". Doeltaal: ${targetLanguage}. Retourneer als JSON.`;
         const payload = {
-            model: "google/gemini-2.0-flash-exp:free", // Model gewijzigd naar Gemini
-            response_format: { type: "json_object" }, // Vraag om JSON output (hopelijk ondersteund)
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-            ],
-            temperature: 0.5, // Iets creatiever voor uitleg, maar niet te veel
-            max_tokens: 500,
-            // stream: false // Zekerstellen dat we wachten op de volledige JSON
+            model: "google/gemini-2.0-flash-exp:free",
+            response_format: { type: "json_object" },
+            messages: [ { role: "system", content: systemPrompt }, { role: "user", content: userPrompt } ],
+            temperature: 0.5, max_tokens: 500,
         };
 
         try {
             const response = await fetch(OPENROUTER_API_URL, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
-                console.error("Mistral API Error Data:", errorData);
-                throw new Error(`Mistral API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
+                console.error("Gemini API Error Data (Text Processing):", errorData);
+                throw new Error(`Gemini (Text Processing) API request failed: ${response.status}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
             }
-
             const data = await response.json();
-            console.log(`Gemini API Response for "${itemText}" (Text Processing):`, data); // Log aangepast
-
+            console.log(`Gemini API Response for "${itemText}" (Text Processing):`, data);
             if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
-                try {
-                    // De content zou al JSON moeten zijn vanwege response_format, maar voor de zekerheid parsen.
-                    // Sommige modellen stoppen de JSON in een ```json ... ``` block.
-                    let contentStr = data.choices[0].message.content;
-                    if (contentStr.startsWith("```json")) {
-                        contentStr = contentStr.substring(7, contentStr.length - 3).trim();
-                    } else if (contentStr.startsWith("```")) {
-                         contentStr = contentStr.substring(3, contentStr.length - 3).trim();
-                    }
-
-                    const jsonResponse = JSON.parse(contentStr);
-                    // Valideer of de verwachte velden aanwezig zijn
-                    if (typeof jsonResponse.original_name === 'undefined' || typeof jsonResponse.vertaald_naam === 'undefined' ||
-                        typeof jsonResponse.uitleg === 'undefined' || typeof jsonResponse.ingredienten === 'undefined') {
-                        console.warn("Gemini response mist verwachte JSON velden:", jsonResponse);
-                        // Probeer toch iets terug te geven met de originele tekst als fallback
-                        return {
-                            original_name: itemText,
-                            vertaald_naam: `Kon niet verwerken met Gemini: ${itemText}`,
-                            uitleg: "Fout bij parsen van Gemini AI antwoord (missende velden).",
-                            ingredienten: [],
-                            keuken: ""
-                        };
-                    }
-                    return jsonResponse;
-                } catch (e) {
-                    console.error("Fout bij het parsen van Gemini JSON response:", e, data.choices[0].message.content);
-                    throw new Error("Antwoord van Gemini kon niet als JSON worden verwerkt.");
+                let contentStr = data.choices[0].message.content;
+                if (contentStr.startsWith("```json")) { contentStr = contentStr.substring(7, contentStr.length - 3).trim(); }
+                else if (contentStr.startsWith("```")) { contentStr = contentStr.substring(3, contentStr.length - 3).trim(); }
+                const jsonResponse = JSON.parse(contentStr);
+                if (typeof jsonResponse.original_name === 'undefined' || typeof jsonResponse.vertaald_naam === 'undefined' ||
+                    typeof jsonResponse.uitleg === 'undefined' || typeof jsonResponse.ingredienten === 'undefined') {
+                    console.warn("Gemini response mist verwachte JSON velden:", jsonResponse);
+                    return { original_name: itemText, vertaald_naam: `Kon niet verwerken: ${itemText}`, uitleg: "Fout bij parsen (missende velden).", ingredienten: [], keuken: "" };
                 }
+                return jsonResponse;
             } else {
-                throw new Error("Geen geldige content ontvangen van Gemini API (Text Processing).");
+                throw new Error("Geen geldige content van Gemini API (Text Processing).");
             }
         } catch (error) {
-            console.error(`Fout tijdens Gemini API call for "${itemText}" (Text Processing):`, error); // Log aangepast
-            // Geef een foutobject terug zodat de loop door kan gaan met andere items
-            return {
-                original_name: itemText,
-                vertaald_naam: `Fout bij verwerken: ${itemText}`,
-                uitleg: error.message,
-                ingredienten: [],
-                keuken: ""
-            };
+            console.error(`Fout tijdens Gemini API call for "${itemText}" (Text Processing):`, error);
+            return { original_name: itemText, vertaald_naam: `Fout bij verwerken: ${itemText}`, uitleg: error.message, ingredienten: [], keuken: "" };
         }
     }
 
-
-    async function generateImageWithLlama(processedTextData) {
+    async function generateImageWithQwen(processedTextData) {
         const { vertaald_naam, original_name, keuken, ingredienten } = processedTextData;
-        console.log(`Generating image for "${vertaald_naam}" with Llama 3.2 Vision...`);
-
-        // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
-
-        // Probeer een generieke garnituur of laat het weg als het te complex wordt.
-        const garnituur = "een passende garnering"; // Simpele placeholder
-        const ingredientenString = ingredienten.join(', ');
-
-        // De prompt zoals gespecificeerd, aangepast voor Llama text-to-image.
-        // Het is mogelijk dat Llama een andere promptstructuur of parameters verwacht dan standaard text-to-image modellen.
-        // Dit is een generieke text-to-image prompt.
+        console.log(`Generating image for "${vertaald_naam}" with Qwen...`);
+        const garnituur = "een passende garnering";
+        const ingredientenString = ingredienten ? ingredienten.join(', ') : 'onbekende ingrediënten';
         const imagePromptText = `Generate a high-quality food photography image of "${vertaald_naam}" (Original: "${original_name}"), a traditional ${keuken || 'dish'} made with ${ingredientenString}. The dish is served on a clean white plate, with ${garnituur}, in a well-lit restaurant setting. Professional food photography style, hyper-realistic, 4K resolution.`;
-
-        // Aanname: Llama Vision op OpenRouter accepteert een text-to-image prompt via de chat completions endpoint.
-        // De exacte modelnaam moet geverifieerd worden op OpenRouter. Ik gebruik een placeholder.
-        // OpenRouter's documentatie over beeldgeneratie is hier cruciaal.
-        // Veel beeldmodellen hebben specifieke parameters zoals "n" (aantal afbeeldingen), "size", etc.
-        // Voor nu houden we het simpel.
         const payload = {
-            model: "qwen/qwq-32b:free", // Exacte model ID zoals gespecificeerd door gebruiker.
-                                   // VERIFIEER of dit model bestaat, gratis is, en text-to-image ondersteunt op OpenRouter.
-            messages: [
-                {
-                    role: "user",
-                    content: imagePromptText
-                }
-            ],
-            // Mogelijke parameters specifiek voor beeldgeneratie (afhankelijk van model/OpenRouter implementatie):
-            // "n": 1, // Aantal afbeeldingen
-            // "size": "1024x1024", // Afbeeldingsgrootte
-            // "response_format": "url", // of "b64_json"
-            max_tokens: 250 // Ruimte voor een URL of base64 string (kan aangepast worden)
+            model: "qwen/qwq-32b:free",
+            messages: [ { role: "user", content: imagePromptText } ],
+            max_tokens: 250
         };
 
         try {
             const response = await fetch(OPENROUTER_API_URL, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
-                console.error("Llama Vision API Error Data:", errorData);
-                throw new Error(`Llama Vision API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
+                console.error("Qwen Image Gen API Error Data:", errorData);
+                throw new Error(`Qwen Image Gen API request failed: ${response.status}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
             }
-
             const data = await response.json();
-            console.log(`Llama Vision API Response for "${vertaald_naam}":`, data);
-
-            // De structuur van het antwoord voor beeldgeneratie kan variëren.
-            // - Sommige modellen geven een URL in `data.url` of `data.data[0].url`.
-            // - Andere geven base64 data in `data.data[0].b64_json`.
-            // - Als het via de chat completions endpoint gaat, kan de URL in `choices[0].message.content` staan.
-            // Dit is een generieke poging om een URL te vinden.
+            console.log(`Qwen Image Gen API Response for "${vertaald_naam}":`, data);
             let imageUrl = null;
             if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
-                // Probeer te zien of de content een URL is. Dit is een zwakke check.
-                // Een beter model zou expliciet een URL of base64 teruggeven in een gestructureerd veld.
                 const content = data.choices[0].message.content;
-                if (content.startsWith('http://') || content.startsWith('https://')) {
-                    imageUrl = content;
-                } else {
-                    // Als het geen URL is, kan het een pad zijn of een base64 string.
-                    // Voor nu loggen we het en gaan we ervan uit dat we een URL verwachten.
-                    console.warn("Llama Vision response content is not an obvious URL:", content);
-                     // Probeer of het een base64 string is (simpele check)
-                    if (content.startsWith('data:image/')) {
-                        imageUrl = content; // Direct bruikbaar als src
-                    } else {
-                        // Fallback als we de image URL niet kunnen vinden.
-                        console.error("Kon geen image URL extraheren uit Llama Vision response.");
-                        // imageUrl = `https://via.placeholder.com/300x200.png?text=Fout+bij+beeldgeneratie`;
-                    }
-                }
-            } else if (data.data && data.data.length > 0 && data.data[0].url) {
-                imageUrl = data.data[0].url; // Standaard OpenAI DALL-E formaat
-            } else if (data.data && data.data.length > 0 && data.data[0].b64_json) {
-                imageUrl = `data:image/png;base64,${data.data[0].b64_json}`; // Standaard OpenAI DALL-E formaat
-            }
-
+                if (content.startsWith('http://') || content.startsWith('https://')) { imageUrl = content; }
+                else if (content.startsWith('data:image/')) { imageUrl = content; }
+                else { console.warn("Qwen Image Gen response content is not an obvious URL/Base64:", content); }
+            } else if (data.data && data.data.length > 0 && data.data[0].url) { imageUrl = data.data[0].url;
+            } else if (data.data && data.data.length > 0 && data.data[0].b64_json) { imageUrl = `data:image/png;base64,${data.data[0].b64_json}`; }
 
             if (!imageUrl) {
-                 // Als na alle checks geen URL is gevonden, gebruik een duidelijke placeholder
-                console.error("Kon geen bruikbare image URL of base64 data extraheren uit Llama Vision response.");
-                return `https://via.placeholder.com/300x200.png?text=Beeld+generatie+mislukt+voor+${vertaald_naam.replace(/\s+/g, '+')}`;
+                console.error("Kon geen bruikbare image URL/Base64 uit Qwen Image Gen response halen.");
+                return `https://via.placeholder.com/300x200.png?text=Beeld+Qwen+mislukt+${vertaald_naam.replace(/\s+/g, '+')}`;
             }
-
             return imageUrl;
-
         } catch (error) {
-            console.error(`Fout tijdens Llama Vision API call for "${vertaald_naam}":`, error);
-            return `https://via.placeholder.com/300x200.png?text=API+Fout+beeld+${vertaald_naam.replace(/\s+/g, '+')}`; // Fallback image URL
+            console.error(`Fout tijdens Qwen Image Gen API call for "${vertaald_naam}":`, error);
+            return `https://via.placeholder.com/300x200.png?text=API+Fout+Qwen+${vertaald_naam.replace(/\s+/g, '+')}`;
         }
     }
-
 
     // --- Hulpfuncties voor UI ---
 
     function showLoading(isLoading) {
         if (isLoading) {
-            loadingIndicator.style.opacity = '0'; // Begin onzichtbaar voor fade-in
+            loadingIndicator.style.opacity = '0';
             loadingIndicator.style.display = 'flex';
-            setTimeout(() => { // Wacht een fractie voor de display:flex om effect te hebben
-                loadingIndicator.style.opacity = '1';
-            }, 20);
+            setTimeout(() => { loadingIndicator.style.opacity = '1'; }, 20);
         } else {
             loadingIndicator.style.opacity = '0';
-            setTimeout(() => { // Wacht tot fade-out compleet is voor display:none
-                loadingIndicator.style.display = 'none';
-            }, 300); // Moet overeenkomen met CSS transitie tijd
+            setTimeout(() => { loadingIndicator.style.display = 'none'; }, 300);
         }
     }
 
     function showError(message) {
-        errorMessageTextElement.textContent = message; // Zet tekst in de span
-        errorMessageElement.style.display = 'flex'; // Gebruik flex voor de error card
+        errorMessageTextElement.textContent = message;
+        errorMessageElement.style.display = 'flex';
     }
 
     function clearResults() {
-        menuItemsContainer.innerHTML = ''; // Maak de container voor de resultaten leeg
+        menuItemsContainer.innerHTML = '';
         errorMessageElement.style.display = 'none';
         errorMessageTextElement.textContent = '';
     }
 
-    // Nieuwe, simpele functie om de direct vertaalde tekst van het hele menu te tonen
-    function displayVertaaldMenu(vertaaldeTekst) {
-        menuItemsContainer.innerHTML = ''; // Maak eerst eventuele oude resultaten leeg
-
-        const preformattedText = document.createElement('pre');
-        preformattedText.classList.add('vertaald-menu-text'); // Voor eventuele styling
-        preformattedText.textContent = vertaaldeTekst;
-
-        const resultCard = document.createElement('div');
-        resultCard.classList.add('card'); // Gebruik de bestaande card stijl
-        resultCard.style.marginTop = '20px'; // Beetje ruimte bovenaan
-
-        const title = document.createElement('h3');
-        title.innerHTML = '<i class="fas fa-language"></i> Vertaald Menu';
-        resultCard.appendChild(title);
-        resultCard.appendChild(preformattedText);
-
-        menuItemsContainer.appendChild(resultCard);
-    }
-
-    // De oude displayMenuItem functie wordt nu niet gebruikt, maar blijft voorlopig staan.
-    /*
     function displayMenuItem(item) {
         const itemCard = document.createElement('article');
         itemCard.classList.add('menu-item');
@@ -395,7 +264,7 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
         const imageContainer = document.createElement('div');
         imageContainer.classList.add('menu-item-image-container');
 
-        if (item.image_url && !item.image_url.includes('placeholder.com') && !item.image_url.includes('Beeld+generatie+mislukt') && !item.image_url.includes('API+Fout+beeld')) {
+        if (item.image_url && !item.image_url.includes('placeholder.com') && !item.image_url.includes('Beeld+Qwen+mislukt') && !item.image_url.includes('API+Fout+Qwen')) {
             const img = document.createElement('img');
             img.src = item.image_url;
             img.alt = `Afbeelding van ${item.vertaald_naam || item.original_name || 'gerecht'}`;
@@ -405,8 +274,8 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
             imageContainer.appendChild(img);
         } else {
             let placeholderText = '[Geen afbeelding gegenereerd]';
-            if(item.image_url && (item.image_url.includes('Beeld+generatie+mislukt') || item.image_url.includes('API+Fout+beeld'))) {
-                placeholderText = '[Beeldgeneratie voor dit item is mislukt]';
+            if(item.image_url && (item.image_url.includes('Beeld+Qwen+mislukt') || item.image_url.includes('API+Fout+Qwen'))) {
+                placeholderText = '[Beeldgeneratie met Qwen voor dit item is mislukt]';
             }
             imageContainer.innerHTML = `<p class="placeholder-image-text">${placeholderText}</p>`;
         }
@@ -423,9 +292,6 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
             <p><strong><i class="fas fa-flag"></i> Keuken:</strong> ${item.keuken || 'Niet gespecificeerd'}</p>
         `;
         itemCard.appendChild(contentDiv);
-
         menuItemsContainer.appendChild(itemCard);
     }
-    */
-
 });
