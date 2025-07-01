@@ -36,57 +36,32 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading(true);
 
         try {
-            // Stap 1: OCR (nog niet geïmplementeerd, placeholder)
-            // In een echte implementatie zou hier de call naar Gemini of Tesseract.js komen.
-            const ocrText = await performOcr(imageFile);
-            console.log("OCR Result (placeholder):", ocrText);
+            // STAP 1: Converteer afbeelding naar Base64
+            const base64Image = await imageToBase64(imageFile);
+            console.log("Afbeelding geconverteerd naar Base64.");
 
-            if (!ocrText || ocrText.trim() === "") {
-                showError("Kon geen tekst uit de afbeelding extraheren. Probeer een duidelijkere foto.");
+            // STAP 2: Roep Qwen aan om de afbeelding te bekijken en direct te vertalen
+            const vertaaldeTekst = await analyseerEnVertaalMenuMetQwen(base64Image, targetLanguage);
+            console.log("Vertaalde tekst van Qwen:", vertaaldeTekst);
+
+            if (!vertaaldeTekst || vertaaldeTekst.trim() === "") {
+                showError("Kon geen vertaalde tekst van het menu verkrijgen van Qwen. Het antwoord was leeg.");
                 showLoading(false);
                 return;
             }
 
-            // Stap 2: Parse menu items (simpele placeholder, moet verfijnd worden)
-            const menuItems = parseMenuItems(ocrText);
-            if (menuItems.length === 0) {
-                showError("Kon geen individuele menu-items vinden in de tekst.");
-                showLoading(false);
-                return;
-            }
-            console.log("Parsed Menu Items (placeholder):", menuItems);
-
-
-            // Stap 3 & 4: Verwerk elk menu item (tekstverwerking & beeldgeneratie)
-            // Nu eerst alleen tekstverwerking, beeldgeneratie komt in de volgende stap.
-            for (const itemText of menuItems) {
-                const processedTextData = await processSingleMenuItemWithGemini(itemText, targetLanguage); // Hernoemde functie
-
-                let imageUrl = `https://via.placeholder.com/300x200.png?text=Beeld+voor+${(processedTextData.vertaald_naam || itemText).replace(/\s+/g, '+')}`; // Default placeholder
-                if (processedTextData && !processedTextData.uitleg.startsWith("Fout bij verwerken")) { // Alleen proberen als tekstverwerking succesvol was
-                    try {
-                        imageUrl = await generateImageWithLlama(processedTextData);
-                    } catch (imgError) {
-                        console.error("Kon afbeelding niet genereren voor:", processedTextData.vertaald_naam, imgError);
-                        // imageUrl blijft de placeholder als generateImageWithLlama een error gooit of een fallback URL teruggeeft.
-                    }
-                }
-
-                displayMenuItem({
-                    ...processedTextData,
-                    image_url: imageUrl
-                });
-            }
+            // STAP 3: Toon het resultaat (de volledige vertaalde tekst)
+            displayVertaaldMenu(vertaaldeTekst);
 
         } catch (error) {
-            console.error("Fout tijdens verwerken:", error);
+            console.error("Fout tijdens verwerken (vereenvoudigde flow):", error);
             showError(`Er is een fout opgetreden: ${error.message}`);
         } finally {
             showLoading(false);
         }
     });
 
-    // --- Functies voor AI interactie ---
+    // --- Functies voor AI interactie (Aangepast voor vereenvoudigde flow) ---
 
     function imageToBase64(file) {
         return new Promise((resolve, reject) => {
@@ -97,21 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function performOcr(imageFile) {
-        console.log("Starting OCR with Gemini...");
-        // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
+    async function analyseerEnVertaalMenuMetQwen(base64Image, targetLanguage) {
+        console.log(`Menu analyseren en vertalen naar ${targetLanguage} met Qwen...`);
+        // Client-side API key check is verwijderd. Validatie gebeurt door OpenRouter.
 
-        const base64Image = await imageToBase64(imageFile);
+        const userPrompt = `Bekijk deze menukaart (afbeelding). Vertaal de volledige inhoud van dit menu naar het ${targetLanguage}. Geef alleen de vertaalde tekst terug, zonder extra opmerkingen, uitleg, of markdown-formattering.`;
 
         const payload = {
-            model: "google/gemini-2.0-flash-exp:free", // Gecorrigeerd OCR Model
+            model: "qwen/qwq-32b:free", // Zoals gespecificeerd
             messages: [
                 {
                     role: "user",
                     content: [
                         {
                             type: "text",
-                            text: "Extraheer alle tekst van deze afbeelding van een menukaart. Geef alleen de herkende tekst terug, zonder extra opmerkingen of uitleg."
+                            text: userPrompt
                         },
                         {
                             type: "image_url",
@@ -383,21 +358,42 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
     function showError(message) {
         errorMessageTextElement.textContent = message; // Zet tekst in de span
         errorMessageElement.style.display = 'flex'; // Gebruik flex voor de error card
-        // Voeg eventueel een fade-in toe als gewenst, vergelijkbaar met showLoading
     }
 
     function clearResults() {
-        menuItemsContainer.innerHTML = '';
+        menuItemsContainer.innerHTML = ''; // Maak de container voor de resultaten leeg
         errorMessageElement.style.display = 'none';
         errorMessageTextElement.textContent = '';
     }
 
+    // Nieuwe, simpele functie om de direct vertaalde tekst van het hele menu te tonen
+    function displayVertaaldMenu(vertaaldeTekst) {
+        menuItemsContainer.innerHTML = ''; // Maak eerst eventuele oude resultaten leeg
+
+        const preformattedText = document.createElement('pre');
+        preformattedText.classList.add('vertaald-menu-text'); // Voor eventuele styling
+        preformattedText.textContent = vertaaldeTekst;
+
+        const resultCard = document.createElement('div');
+        resultCard.classList.add('card'); // Gebruik de bestaande card stijl
+        resultCard.style.marginTop = '20px'; // Beetje ruimte bovenaan
+
+        const title = document.createElement('h3');
+        title.innerHTML = '<i class="fas fa-language"></i> Vertaald Menu';
+        resultCard.appendChild(title);
+        resultCard.appendChild(preformattedText);
+
+        menuItemsContainer.appendChild(resultCard);
+    }
+
+    // De oude displayMenuItem functie wordt nu niet gebruikt, maar blijft voorlopig staan.
+    /*
     function displayMenuItem(item) {
-        const itemCard = document.createElement('article'); // Gebruik <article> voor semantiek
-        itemCard.classList.add('menu-item'); // De .card stijl wordt al toegepast door .menu-item in CSS
+        const itemCard = document.createElement('article');
+        itemCard.classList.add('menu-item');
 
         const imageContainer = document.createElement('div');
-        imageContainer.classList.add('menu-item-image-container'); // Voor eventuele extra styling
+        imageContainer.classList.add('menu-item-image-container');
 
         if (item.image_url && !item.image_url.includes('placeholder.com') && !item.image_url.includes('Beeld+generatie+mislukt') && !item.image_url.includes('API+Fout+beeld')) {
             const img = document.createElement('img');
@@ -430,5 +426,6 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
 
         menuItemsContainer.appendChild(itemCard);
     }
+    */
 
 });
