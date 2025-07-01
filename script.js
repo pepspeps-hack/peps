@@ -1,0 +1,414 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const menuImageUpload = document.getElementById('menu-image-upload');
+    const targetLanguageSelect = document.getElementById('target-language');
+    const processMenuButton = document.getElementById('process-menu-button');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const errorMessageElement = document.getElementById('error-message');
+    const menuItemsContainer = document.getElementById('menu-items-container');
+
+    // Placeholder for OpenRouter API Key - !!! VUL HIER JE EIGEN KEY IN !!!
+    // LET OP: Het is veiliger om de API key via een backend proxy te laten lopen voor een productie applicatie.
+    // Voor dit prototype wordt het direct gebruikt, wat een veiligheidsrisico kan zijn.
+    const OPENROUTER_API_KEY = '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'; // VERVANG MET JE ECHTE KEY
+    const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+    processMenuButton.addEventListener('click', async () => {
+        const files = menuImageUpload.files;
+        if (files.length === 0) {
+            showError("Selecteer alstublieft een afbeelding van het menu.");
+            return;
+        }
+
+        const targetLanguage = targetLanguageSelect.value;
+        const imageFile = files[0];
+
+        clearResults();
+        showLoading(true);
+
+        try {
+            // Stap 1: OCR (nog niet geïmplementeerd, placeholder)
+            // In een echte implementatie zou hier de call naar Gemini of Tesseract.js komen.
+            const ocrText = await performOcr(imageFile);
+            console.log("OCR Result (placeholder):", ocrText);
+
+            if (!ocrText || ocrText.trim() === "") {
+                showError("Kon geen tekst uit de afbeelding extraheren. Probeer een duidelijkere foto.");
+                showLoading(false);
+                return;
+            }
+
+            // Stap 2: Parse menu items (simpele placeholder, moet verfijnd worden)
+            const menuItems = parseMenuItems(ocrText);
+            if (menuItems.length === 0) {
+                showError("Kon geen individuele menu-items vinden in de tekst.");
+                showLoading(false);
+                return;
+            }
+            console.log("Parsed Menu Items (placeholder):", menuItems);
+
+
+            // Stap 3 & 4: Verwerk elk menu item (tekstverwerking & beeldgeneratie)
+            // Nu eerst alleen tekstverwerking, beeldgeneratie komt in de volgende stap.
+            for (const itemText of menuItems) {
+                const processedTextData = await processSingleMenuItemWithMistral(itemText, targetLanguage);
+
+                let imageUrl = `https://via.placeholder.com/300x200.png?text=Beeld+voor+${(processedTextData.vertaald_naam || itemText).replace(/\s+/g, '+')}`; // Default placeholder
+                if (processedTextData && !processedTextData.uitleg.startsWith("Fout bij verwerken")) { // Alleen proberen als tekstverwerking succesvol was
+                    try {
+                        imageUrl = await generateImageWithLlama(processedTextData);
+                    } catch (imgError) {
+                        console.error("Kon afbeelding niet genereren voor:", processedTextData.vertaald_naam, imgError);
+                        // imageUrl blijft de placeholder als generateImageWithLlama een error gooit of een fallback URL teruggeeft.
+                    }
+                }
+
+                displayMenuItem({
+                    ...processedTextData,
+                    image_url: imageUrl
+                });
+            }
+
+        } catch (error) {
+            console.error("Fout tijdens verwerken:", error);
+            showError(`Er is een fout opgetreden: ${error.message}`);
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    // --- Functies voor AI interactie ---
+
+    function imageToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function performOcr(imageFile) {
+        console.log("Starting OCR with Gemini...");
+        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' || OPENROUTER_API_KEY === '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') {
+            throw new Error("OpenRouter API Key is niet ingesteld of is nog de placeholder in script.js. Vervang deze met je eigen geldige API key.");
+        }
+
+        const base64Image = await imageToBase64(imageFile);
+
+        const payload = {
+            model: "google/gemini-flash-1.5", // Model voor OCR
+            messages: [
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: "Extraheer alle tekst van deze afbeelding van een menukaart. Geef alleen de herkende tekst terug, zonder extra opmerkingen of uitleg."
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: base64Image
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 2000 // Ruimte voor potentieel veel tekst
+        };
+
+        try {
+            const response = await fetch(OPENROUTER_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json',
+                    // Optioneel: Voeg site URL en naam toe voor OpenRouter leaderboards
+                    // 'HTTP-Referer': 'YOUR_SITE_URL',
+                    // 'X-Title': 'YOUR_SITE_NAME'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null); // Probeer error details te parsen
+                console.error("API Error Data:", errorData);
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
+            }
+
+            const data = await response.json();
+            console.log("Gemini API Response (OCR):", data);
+
+            if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                return data.choices[0].message.content.trim();
+            } else {
+                throw new Error("Geen geldige tekst ontvangen van OCR API.");
+            }
+        } catch (error) {
+            console.error("Fout tijdens OCR API call:", error);
+            throw error; // Gooi de error verder zodat het in de UI getoond kan worden
+        }
+    }
+
+    function parseMenuItems(ocrText) {
+        // Simpele parser: split op nieuwe regels. Moet slimmer gemaakt worden.
+        return ocrText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    }
+
+    async function processSingleMenuItemWithMistral(itemText, targetLanguage) {
+        console.log(`Processing item "${itemText}" with Mistral Nemo for language: ${targetLanguage}`);
+        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' || OPENROUTER_API_KEY === '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') {
+            throw new Error("OpenRouter API Key is niet ingesteld of is nog de placeholder in script.js. Vervang deze met je eigen geldige API key.");
+        }
+
+        const systemPrompt = `Je bent een gespecialiseerde AI-assistent voor het analyseren en uitleggen van restaurantmenu-items.
+Antwoord ALTIJD in een valide JSON-object. De structuur van het JSON-object moet zijn:
+{
+  "original_name": "DE ORIGINELE TEKST VAN HET MENU ITEM",
+  "vertaald_naam": "DE VERTALING VAN HET MENU ITEM NAAR DE DOELTAAL",
+  "uitleg": "EEN KORTE, EENVOUDIGE UITLEG VAN HET GERECHT IN DE DOELTAAL",
+  "ingredienten": ["HOOFDINGREDIËNT 1", "HOOFDINGREDIËNT 2", "..."],
+  "keuken": "DE KEUKEN (BIJV. ITALIAANS, MEXICAANS, ETC.) INDIEN AFLEIDBAAR, ANDERS LEEG LATEN"
+}
+Extraheer de informatie uitsluitend uit de gegeven menu-item tekst. Speculeer niet over ingrediënten of keuken als deze niet duidelijk zijn.
+Als een veld niet ingevuld kan worden op basis van de input, laat de string dan leeg of geef een lege array voor ingrediënten.`;
+
+        const userPrompt = `Analyseer het volgende menu-item: "${itemText}".
+Doeltaal voor vertaling en uitleg: ${targetLanguage}.
+Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system prompt.`;
+
+        const payload = {
+            model: "mistralai/mistral-7b-instruct:free", // Mistral Nemo (gratis versie)
+            response_format: { type: "json_object" }, // Vraag om JSON output
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            temperature: 0.5, // Iets creatiever voor uitleg, maar niet te veel
+            max_tokens: 500,
+            // stream: false // Zekerstellen dat we wachten op de volledige JSON
+        };
+
+        try {
+            const response = await fetch(OPENROUTER_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                console.error("Mistral API Error Data:", errorData);
+                throw new Error(`Mistral API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
+            }
+
+            const data = await response.json();
+            console.log(`Mistral API Response for "${itemText}":`, data);
+
+            if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                try {
+                    // De content zou al JSON moeten zijn vanwege response_format, maar voor de zekerheid parsen.
+                    const jsonResponse = JSON.parse(data.choices[0].message.content);
+                    // Valideer of de verwachte velden aanwezig zijn
+                    if (!jsonResponse.original_name || !jsonResponse.vertaald_naam || !jsonResponse.uitleg || !jsonResponse.ingredienten) {
+                        console.warn("Mistral response mist verwachte JSON velden:", jsonResponse);
+                        // Probeer toch iets terug te geven met de originele tekst als fallback
+                        return {
+                            original_name: itemText,
+                            vertaald_naam: `Kon niet verwerken: ${itemText}`,
+                            uitleg: "Fout bij parsen van AI antwoord.",
+                            ingredienten: [],
+                            keuken: ""
+                        };
+                    }
+                    return jsonResponse;
+                } catch (e) {
+                    console.error("Fout bij het parsen van Mistral JSON response:", e, data.choices[0].message.content);
+                    throw new Error("Antwoord van Mistral kon niet als JSON worden verwerkt.");
+                }
+            } else {
+                throw new Error("Geen geldige content ontvangen van Mistral API.");
+            }
+        } catch (error) {
+            console.error(`Fout tijdens Mistral API call for "${itemText}":`, error);
+            // Geef een foutobject terug zodat de loop door kan gaan met andere items
+            return {
+                original_name: itemText,
+                vertaald_naam: `Fout bij verwerken: ${itemText}`,
+                uitleg: error.message,
+                ingredienten: [],
+                keuken: ""
+            };
+        }
+    }
+
+
+    async function generateImageWithLlama(processedTextData) {
+        const { vertaald_naam, original_name, keuken, ingredienten } = processedTextData;
+        console.log(`Generating image for "${vertaald_naam}" with Llama 3.2 Vision...`);
+
+        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE' || OPENROUTER_API_KEY === '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') {
+            throw new Error("OpenRouter API Key is niet ingesteld of is nog de placeholder in script.js. Vervang deze met je eigen geldige API key.");
+        }
+
+        // Probeer een generieke garnituur of laat het weg als het te complex wordt.
+        const garnituur = "een passende garnering"; // Simpele placeholder
+        const ingredientenString = ingredienten.join(', ');
+
+        // De prompt zoals gespecificeerd, aangepast voor Llama text-to-image.
+        // Het is mogelijk dat Llama een andere promptstructuur of parameters verwacht dan standaard text-to-image modellen.
+        // Dit is een generieke text-to-image prompt.
+        const imagePromptText = `Generate a high-quality food photography image of "${vertaald_naam}" (Original: "${original_name}"), a traditional ${keuken || 'dish'} made with ${ingredientenString}. The dish is served on a clean white plate, with ${garnituur}, in a well-lit restaurant setting. Professional food photography style, hyper-realistic, 4K resolution.`;
+
+        // Aanname: Llama Vision op OpenRouter accepteert een text-to-image prompt via de chat completions endpoint.
+        // De exacte modelnaam moet geverifieerd worden op OpenRouter. Ik gebruik een placeholder.
+        // OpenRouter's documentatie over beeldgeneratie is hier cruciaal.
+        // Veel beeldmodellen hebben specifieke parameters zoals "n" (aantal afbeeldingen), "size", etc.
+        // Voor nu houden we het simpel.
+        const payload = {
+            model: "meta-llama/llama-3.1-8b-instruct", // TIJDELIJKE PLAATSVERVANGER - MOET DE ECHTE LLAMA 3.2 11B VISION (FREE) ZIJN
+                                                // Controleer de juiste model identifier op OpenRouter!
+                                                // Bijv. "meta-llama/llama-3.2-11b-vision:free" of iets dergelijks.
+            messages: [
+                {
+                    role: "user",
+                    content: imagePromptText
+                }
+            ],
+            // Mogelijke parameters specifiek voor beeldgeneratie (afhankelijk van model/OpenRouter implementatie):
+            // "n": 1, // Aantal afbeeldingen
+            // "size": "1024x1024", // Afbeeldingsgrootte
+            // "response_format": "url", // of "b64_json"
+            max_tokens: 250 // Ruimte voor een URL of base64 string (kan aangepast worden)
+        };
+
+        try {
+            const response = await fetch(OPENROUTER_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                console.error("Llama Vision API Error Data:", errorData);
+                throw new Error(`Llama Vision API request failed with status ${response.status}: ${response.statusText}. Details: ${errorData ? JSON.stringify(errorData.error) : 'Geen details'}`);
+            }
+
+            const data = await response.json();
+            console.log(`Llama Vision API Response for "${vertaald_naam}":`, data);
+
+            // De structuur van het antwoord voor beeldgeneratie kan variëren.
+            // - Sommige modellen geven een URL in `data.url` of `data.data[0].url`.
+            // - Andere geven base64 data in `data.data[0].b64_json`.
+            // - Als het via de chat completions endpoint gaat, kan de URL in `choices[0].message.content` staan.
+            // Dit is een generieke poging om een URL te vinden.
+            let imageUrl = null;
+            if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                // Probeer te zien of de content een URL is. Dit is een zwakke check.
+                // Een beter model zou expliciet een URL of base64 teruggeven in een gestructureerd veld.
+                const content = data.choices[0].message.content;
+                if (content.startsWith('http://') || content.startsWith('https://')) {
+                    imageUrl = content;
+                } else {
+                    // Als het geen URL is, kan het een pad zijn of een base64 string.
+                    // Voor nu loggen we het en gaan we ervan uit dat we een URL verwachten.
+                    console.warn("Llama Vision response content is not an obvious URL:", content);
+                     // Probeer of het een base64 string is (simpele check)
+                    if (content.startsWith('data:image/')) {
+                        imageUrl = content; // Direct bruikbaar als src
+                    } else {
+                        // Fallback als we de image URL niet kunnen vinden.
+                        console.error("Kon geen image URL extraheren uit Llama Vision response.");
+                        // imageUrl = `https://via.placeholder.com/300x200.png?text=Fout+bij+beeldgeneratie`;
+                    }
+                }
+            } else if (data.data && data.data.length > 0 && data.data[0].url) {
+                imageUrl = data.data[0].url; // Standaard OpenAI DALL-E formaat
+            } else if (data.data && data.data.length > 0 && data.data[0].b64_json) {
+                imageUrl = `data:image/png;base64,${data.data[0].b64_json}`; // Standaard OpenAI DALL-E formaat
+            }
+
+
+            if (!imageUrl) {
+                 // Als na alle checks geen URL is gevonden, gebruik een duidelijke placeholder
+                console.error("Kon geen bruikbare image URL of base64 data extraheren uit Llama Vision response.");
+                return `https://via.placeholder.com/300x200.png?text=Beeld+generatie+mislukt+voor+${vertaald_naam.replace(/\s+/g, '+')}`;
+            }
+
+            return imageUrl;
+
+        } catch (error) {
+            console.error(`Fout tijdens Llama Vision API call for "${vertaald_naam}":`, error);
+            return `https://via.placeholder.com/300x200.png?text=API+Fout+beeld+${vertaald_naam.replace(/\s+/g, '+')}`; // Fallback image URL
+        }
+    }
+
+
+    // --- Hulpfuncties voor UI ---
+
+    function showLoading(isLoading) {
+        loadingIndicator.style.display = isLoading ? 'block' : 'none';
+    }
+
+    function showError(message) {
+        errorMessageElement.textContent = message;
+        errorMessageElement.style.display = 'block';
+    }
+
+    function clearResults() {
+        menuItemsContainer.innerHTML = '';
+        errorMessageElement.style.display = 'none';
+    }
+
+    function displayMenuItem(item) {
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('menu-item');
+
+        // Bouw eerst de tekstuele content op
+        let textContentHTML = `
+            <h3>${item.vertaald_naam || item.original_name || 'Onbekend Item'}</h3>
+            ${item.original_name && item.vertaald_naam !== item.original_name ? `<p><em>Origineel: ${item.original_name}</em></p>` : ''}
+            <p><strong>Uitleg:</strong> ${item.uitleg || 'Niet beschikbaar'}</p>
+            <p><strong>Ingrediënten:</strong> ${(item.ingredienten && item.ingredienten.length > 0) ? item.ingredienten.join(', ') : 'Niet gespecificeerd'}</p>
+            <p><strong>Keuken:</strong> ${item.keuken || 'Niet gespecificeerd'}</p>
+        `;
+
+        // Voeg afbeelding toe als deze bestaat en geen duidelijke fout-placeholder is
+        // De check op placeholder.com is een simpele heuristiek.
+        if (item.image_url && !item.image_url.includes('placeholder.com') && !item.image_url.includes('Beeld+generatie+mislukt') && !item.image_url.includes('API+Fout+beeld')) {
+            const img = document.createElement('img');
+            img.src = item.image_url;
+            img.alt = `Afbeelding van ${item.vertaald_naam || item.original_name}`;
+            img.onerror = function() { // Fallback als de afbeelding niet laadt
+                this.style.display = 'none'; // Verberg de gebroken afbeelding
+                // Optioneel: toon een tekstuele melding of een standaard fallback afbeelding
+                const fallbackText = document.createElement('p');
+                fallbackText.textContent = '[Afbeelding kon niet geladen worden]';
+                itemDiv.insertBefore(fallbackText, textDiv); // Voeg voor de tekst toe
+            };
+            itemDiv.appendChild(img); // Voeg afbeelding als eerste toe (of na de fallback tekst)
+        } else if (item.image_url) { // Als het wel een placeholder/error URL is
+            const placeholderPara = document.createElement('p');
+            if(item.image_url.includes('Beeld+generatie+mislukt') || item.image_url.includes('API+Fout+beeld')) {
+                placeholderPara.textContent = '[Beeldgeneratie voor dit item is mislukt]';
+            } else {
+                placeholderPara.textContent = '[Geen afbeelding gegenereerd]';
+            }
+            itemDiv.appendChild(placeholderPara);
+        }
+
+        const textDiv = document.createElement('div');
+        textDiv.innerHTML = textContentHTML;
+        itemDiv.appendChild(textDiv); // Voeg daarna de tekst toe
+
+        menuItemsContainer.appendChild(itemDiv);
+    }
+
+});

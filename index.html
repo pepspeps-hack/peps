@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Vertaler AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Menu Vertaler AI</h1>
+    </header>
+    <main>
+        <section id="upload-section">
+            <h2>1. Upload of maak een foto van het menu</h2>
+            <input type="file" id="menu-image-upload" accept="image/*">
+            <p><i>(Voor een toekomstige versie: knop voor camera toegang)</i></p>
+        </section>
+
+        <section id="language-section">
+            <h2>2. Selecteer doeltaal</h2>
+            <select id="target-language">
+                <option value="nl">Nederlands</option>
+                <option value="en">Engels</option>
+                <option value="fr">Frans</option>
+                <option value="de">Duits</option>
+                <option value="es">Spaans</option>
+                <option value="it">Italiaans</option>
+            </select>
+        </section>
+
+        <section id="action-section">
+            <button id="process-menu-button">Verwerk Menu</button>
+        </section>
+
+        <section id="results-section">
+            <h2>Resultaten</h2>
+            <div id="loading-indicator" style="display: none;">Verwerken... even geduld aub.</div>
+            <div id="error-message" style="display: none; color: red;"></div>
+            <div id="menu-items-container">
+                <!-- Hier komen de verwerkte menu items -->
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Powered by OpenRouter AI</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
