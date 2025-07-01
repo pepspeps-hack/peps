@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenRouter API Test</title>
+</head>
+<body>
+    <h1>OpenRouter API Basis Test</h1>
+    <p>Check de Developer Console (F12) voor het resultaat.</p>
+    <button id="testButton">Start Test</button>
+
+    <script>
+        const OPENROUTER_API_KEY = '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'; // Jouw API Key
+        const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+        // Een bekend, capabel gratis model voor een simpele tekst-naar-tekst taak.
+        const TEST_MODEL = 'mistralai/mistral-7b-instruct:free';
+        // Alternatieven om te testen indien nodig:
+        // const TEST_MODEL = 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo:free';
+        // const TEST_MODEL = 'google/gemini-2.0-flash-exp:free'; // Als je Gemini wilt testen met simpele tekst
+        // const TEST_MODEL = 'qwen/qwq-32b:free'; // Jouw Qwen model voor een simpele tekst test
+
+        async function runApiTest() {
+            console.log(`API Test gestart met model: ${TEST_MODEL} en key: ...${OPENROUTER_API_KEY.slice(-6)}`);
+            document.getElementById('testButton').disabled = true;
+            document.getElementById('testButton').textContent = 'Testen...';
+
+            const payload = {
+                model: TEST_MODEL,
+                messages: [
+                    { role: "user", content: "Hello! What is the capital of France?" }
+                ],
+                max_tokens: 50,
+                // Optioneel: voeg een unieke user ID toe om caching te vermijden als je dat wilt testen
+                // user: `testuser-${Date.now()}`
+            };
+
+            try {
+                const response = await fetch(OPENROUTER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                        'Content-Type': 'application/json',
+                        // Optioneel, maar kan helpen voor OpenRouter's tracking/logging
+                        // Pas de URL aan als je de testpagina ergens anders host
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'OpenRouter Simple API Test'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log('Response Status:', response.status, response.statusText);
+
+                const responseBody = await response.text(); // Lees als tekst om alles te zien
+                console.log('Raw Response Body:', responseBody);
+
+                if (!response.ok) {
+                    let errorDetails = responseBody;
+                    try {
+                        const errorJson = JSON.parse(responseBody);
+                        errorDetails = errorJson.error ? JSON.stringify(errorJson.error) : responseBody;
+                    } catch (e) {
+                        // Body was geen JSON, gebruik de raw body
+                    }
+                    const errorMessage = `API Fout: ${response.status} ${response.statusText}. Details: ${errorDetails}`;
+                    console.error(errorMessage);
+                    alert(errorMessage);
+                    return;
+                }
+
+                try {
+                    const data = JSON.parse(responseBody);
+                    console.log('Succesvolle API Response (geparst):', data);
+                    if (data.choices && data.choices.length > 0 && data.choices[0].message && data.choices[0].message.content) {
+                        const aiResponse = data.choices[0].message.content;
+                        console.log("Antwoord van AI:", aiResponse);
+                        alert("Antwoord van AI: " + aiResponse);
+                    } else {
+                        console.warn("Geen antwoord gevonden in de verwachte structuur, maar request was succesvol (2xx).");
+                        alert("Request succesvol (2xx), maar geen antwoord in verwachte structuur. Check console.");
+                    }
+                } catch (e) {
+                    console.error("Kon succesvolle response niet als JSON parsen. Raw body hierboven.", e);
+                    alert("Request succesvol (2xx), maar kon response body niet als JSON parsen. Check console.");
+                }
+
+            } catch (error) {
+                const networkErrorMessage = `Netwerkfout of andere client-side error: ${error.message}. Check console. Mogelijk CORS probleem als je niet via http://localhost serveert.`;
+                console.error(networkErrorMessage, error);
+                alert(networkErrorMessage);
+            } finally {
+                document.getElementById('testButton').disabled = false;
+                document.getElementById('testButton').textContent = 'Start Test';
+            }
+        }
+
+        document.getElementById('testButton').addEventListener('click', runApiTest);
+        // Optioneel: voer de test direct uit bij het laden van de pagina
+        // runApiTest();
+    </script>
+</body>
+</html>
