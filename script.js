@@ -273,8 +273,8 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
         // Veel beeldmodellen hebben specifieke parameters zoals "n" (aantal afbeeldingen), "size", etc.
         // Voor nu houden we het simpel.
         const payload = {
-            model: "qwen/qwen-vl-chat:free", // Nieuw model voor beeldgeneratie zoals aangegeven (Qwen VL variant)
-                                        // VERIFIEER of dit model text-to-image ondersteunt en dit de correcte gratis ID is.
+            model: "qwen/qwq-32b:free", // Exacte model ID zoals gespecificeerd door gebruiker.
+                                   // VERIFIEER of dit model bestaat, gratis is, en text-to-image ondersteunt op OpenRouter.
             messages: [
                 {
                     role: "user",
