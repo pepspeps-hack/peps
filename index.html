@@ -3,48 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Vertaler AI</title>
+    <title>Visionary Menu AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Menu Vertaler AI</h1>
-    </header>
-    <main>
-        <section id="upload-section">
-            <h2>1. Upload of maak een foto van het menu</h2>
-            <input type="file" id="menu-image-upload" accept="image/*">
-            <p><i>(Voor een toekomstige versie: knop voor camera toegang)</i></p>
-        </section>
-
-        <section id="language-section">
-            <h2>2. Selecteer doeltaal</h2>
-            <select id="target-language">
-                <option value="nl">Nederlands</option>
-                <option value="en">Engels</option>
-                <option value="fr">Frans</option>
-                <option value="de">Duits</option>
-                <option value="es">Spaans</option>
-                <option value="it">Italiaans</option>
-            </select>
-        </section>
-
-        <section id="action-section">
-            <button id="process-menu-button">Verwerk Menu</button>
-        </section>
-
-        <section id="results-section">
-            <h2>Resultaten</h2>
-            <div id="loading-indicator" style="display: none;">Verwerken... even geduld aub.</div>
-            <div id="error-message" style="display: none; color: red;"></div>
-            <div id="menu-items-container">
-                <!-- Hier komen de verwerkte menu items -->
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <!-- <img src="logo.png" alt="Visionary Menu AI Logo" class="logo"> -->
+                <i class="fas fa-utensils logo-icon"></i>
+                <h1>Visionary Menu AI</h1>
             </div>
-        </section>
-    </main>
-    <footer>
-        <p>Powered by OpenRouter AI</p>
-    </footer>
+            <p class="tagline">Ontdek elk gerecht, in elke taal.</p>
+        </header>
+
+        <main class="app-main">
+            <section class="input-section card">
+                <h2><i class="fas fa-camera-retro"></i> Start hier: Menukaart Foto</h2>
+                <div class="upload-area">
+                    <label for="menu-image-upload" class="upload-button">
+                        <i class="fas fa-cloud-upload-alt"></i> Kies een foto
+                    </label>
+                    <input type="file" id="menu-image-upload" accept="image/*" style="display: none;">
+                    <span id="file-name-display">Geen bestand gekozen</span>
+                </div>
+                <p class="input-hint">Of maak binnenkort direct een foto met je camera!</p>
+            </section>
+
+            <section class="options-section card">
+                <h2><i class="fas fa-language"></i> Kies uw Taal</h2>
+                <div class="language-selector-container">
+                    <i class="fas fa-globe language-icon-select"></i>
+                    <select id="target-language" aria-label="Selecteer doeltaal">
+                        <option value="nl">Nederlands</option>
+                        <option value="en">Engels</option>
+                        <option value="fr">Frans</option>
+                        <option value="de">Duits</option>
+                        <option value="es">Spaans</option>
+                        <option value="it">Italiaans</option>
+                        <option value="ja">Japans</option>
+                        <option value="zh">Chinees (Mandarijn)</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="action-section">
+                <button id="process-menu-button" class="cta-button">
+                    <i class="fas fa-magic-wand-sparkles"></i> Menu Ontcijferen
+                </button>
+            </section>
+
+            <div id="loading-indicator" class="loading-overlay" style="display: none;">
+                <div class="spinner"></div>
+                <p>Menu wordt geanalyseerd... een moment geduld alstublieft.</p>
+            </div>
+
+            <div id="error-message" class="error-display card" style="display: none;">
+                <i class="fas fa-exclamation-triangle error-icon"></i>
+                <span></span> <!-- Error text comes here -->
+            </div>
+
+            <section id="results-section" class="results-grid">
+                <h2><i class="fas fa-concierge-bell"></i> Uw Menu, Ontrafeld</h2>
+                <div id="menu-items-container">
+                    <!-- Dynamisch gevulde menu items komen hier als kaarten -->
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>&copy; 2024 Visionary Menu AI - Powered by OpenRouter</p>
+        </footer>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>

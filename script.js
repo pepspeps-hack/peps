@@ -2,15 +2,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuImageUpload = document.getElementById('menu-image-upload');
     const targetLanguageSelect = document.getElementById('target-language');
     const processMenuButton = document.getElementById('process-menu-button');
-    const loadingIndicator = document.getElementById('loading-indicator');
-    const errorMessageElement = document.getElementById('error-message');
+    const loadingIndicator = document.getElementById('loading-indicator'); // Dit is nu de .loading-overlay
+    const errorMessageElement = document.getElementById('error-message'); // Dit is nu .error-display
+    const errorMessageTextElement = errorMessageElement.querySelector('span'); // Het span binnen de error-display
     const menuItemsContainer = document.getElementById('menu-items-container');
+    const fileNameDisplay = document.getElementById('file-name-display');
 
     // Placeholder for OpenRouter API Key - !!! VUL HIER JE EIGEN KEY IN !!!
     // LET OP: Het is veiliger om de API key via een backend proxy te laten lopen voor een productie applicatie.
     // Voor dit prototype wordt het direct gebruikt, wat een veiligheidsrisico kan zijn.
     const OPENROUTER_API_KEY = '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'; // VERVANG MET JE ECHTE KEY
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+    menuImageUpload.addEventListener('change', () => {
+        if (menuImageUpload.files.length > 0) {
+            fileNameDisplay.textContent = menuImageUpload.files[0].name;
+        } else {
+            fileNameDisplay.textContent = 'Geen bestand gekozen';
+        }
+    });
 
     processMenuButton.addEventListener('click', async () => {
         const files = menuImageUpload.files;
@@ -354,61 +364,69 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
     // --- Hulpfuncties voor UI ---
 
     function showLoading(isLoading) {
-        loadingIndicator.style.display = isLoading ? 'block' : 'none';
+        if (isLoading) {
+            loadingIndicator.style.opacity = '0'; // Begin onzichtbaar voor fade-in
+            loadingIndicator.style.display = 'flex';
+            setTimeout(() => { // Wacht een fractie voor de display:flex om effect te hebben
+                loadingIndicator.style.opacity = '1';
+            }, 20);
+        } else {
+            loadingIndicator.style.opacity = '0';
+            setTimeout(() => { // Wacht tot fade-out compleet is voor display:none
+                loadingIndicator.style.display = 'none';
+            }, 300); // Moet overeenkomen met CSS transitie tijd
+        }
     }
 
     function showError(message) {
-        errorMessageElement.textContent = message;
-        errorMessageElement.style.display = 'block';
+        errorMessageTextElement.textContent = message; // Zet tekst in de span
+        errorMessageElement.style.display = 'flex'; // Gebruik flex voor de error card
+        // Voeg eventueel een fade-in toe als gewenst, vergelijkbaar met showLoading
     }
 
     function clearResults() {
         menuItemsContainer.innerHTML = '';
         errorMessageElement.style.display = 'none';
+        errorMessageTextElement.textContent = '';
     }
 
     function displayMenuItem(item) {
-        const itemDiv = document.createElement('div');
-        itemDiv.classList.add('menu-item');
+        const itemCard = document.createElement('article'); // Gebruik <article> voor semantiek
+        itemCard.classList.add('menu-item'); // De .card stijl wordt al toegepast door .menu-item in CSS
 
-        // Bouw eerst de tekstuele content op
-        let textContentHTML = `
-            <h3>${item.vertaald_naam || item.original_name || 'Onbekend Item'}</h3>
-            ${item.original_name && item.vertaald_naam !== item.original_name ? `<p><em>Origineel: ${item.original_name}</em></p>` : ''}
-            <p><strong>Uitleg:</strong> ${item.uitleg || 'Niet beschikbaar'}</p>
-            <p><strong>Ingrediënten:</strong> ${(item.ingredienten && item.ingredienten.length > 0) ? item.ingredienten.join(', ') : 'Niet gespecificeerd'}</p>
-            <p><strong>Keuken:</strong> ${item.keuken || 'Niet gespecificeerd'}</p>
-        `;
+        const imageContainer = document.createElement('div');
+        imageContainer.classList.add('menu-item-image-container'); // Voor eventuele extra styling
 
-        // Voeg afbeelding toe als deze bestaat en geen duidelijke fout-placeholder is
-        // De check op placeholder.com is een simpele heuristiek.
         if (item.image_url && !item.image_url.includes('placeholder.com') && !item.image_url.includes('Beeld+generatie+mislukt') && !item.image_url.includes('API+Fout+beeld')) {
             const img = document.createElement('img');
             img.src = item.image_url;
-            img.alt = `Afbeelding van ${item.vertaald_naam || item.original_name}`;
-            img.onerror = function() { // Fallback als de afbeelding niet laadt
-                this.style.display = 'none'; // Verberg de gebroken afbeelding
-                // Optioneel: toon een tekstuele melding of een standaard fallback afbeelding
-                const fallbackText = document.createElement('p');
-                fallbackText.textContent = '[Afbeelding kon niet geladen worden]';
-                itemDiv.insertBefore(fallbackText, textDiv); // Voeg voor de tekst toe
+            img.alt = `Afbeelding van ${item.vertaald_naam || item.original_name || 'gerecht'}`;
+            img.onerror = function() {
+                imageContainer.innerHTML = `<p class="placeholder-image-text">Afbeelding kon niet geladen worden.</p>`;
             };
-            itemDiv.appendChild(img); // Voeg afbeelding als eerste toe (of na de fallback tekst)
-        } else if (item.image_url) { // Als het wel een placeholder/error URL is
-            const placeholderPara = document.createElement('p');
-            if(item.image_url.includes('Beeld+generatie+mislukt') || item.image_url.includes('API+Fout+beeld')) {
-                placeholderPara.textContent = '[Beeldgeneratie voor dit item is mislukt]';
-            } else {
-                placeholderPara.textContent = '[Geen afbeelding gegenereerd]';
+            imageContainer.appendChild(img);
+        } else {
+            let placeholderText = '[Geen afbeelding gegenereerd]';
+            if(item.image_url && (item.image_url.includes('Beeld+generatie+mislukt') || item.image_url.includes('API+Fout+beeld'))) {
+                placeholderText = '[Beeldgeneratie voor dit item is mislukt]';
             }
-            itemDiv.appendChild(placeholderPara);
+            imageContainer.innerHTML = `<p class="placeholder-image-text">${placeholderText}</p>`;
         }
+        itemCard.appendChild(imageContainer);
 
-        const textDiv = document.createElement('div');
-        textDiv.innerHTML = textContentHTML;
-        itemDiv.appendChild(textDiv); // Voeg daarna de tekst toe
+        const contentDiv = document.createElement('div');
+        contentDiv.classList.add('menu-item-content');
 
-        menuItemsContainer.appendChild(itemDiv);
+        contentDiv.innerHTML = `
+            <h3>${item.vertaald_naam || item.original_name || 'Onbekend Item'}</h3>
+            ${(item.original_name && item.vertaald_naam !== item.original_name) ? `<p class="original-name"><em>Origineel: ${item.original_name}</em></p>` : ''}
+            <p><strong><i class="fas fa-info-circle"></i> Uitleg:</strong> ${item.uitleg || 'Niet beschikbaar'}</p>
+            <p><strong><i class="fas fa-pepper-hot"></i> Ingrediënten:</strong> ${(item.ingredienten && item.ingredienten.length > 0) ? item.ingredienten.join(', ') : 'Niet gespecificeerd'}</p>
+            <p><strong><i class="fas fa-flag"></i> Keuken:</strong> ${item.keuken || 'Niet gespecificeerd'}</p>
+        `;
+        itemCard.appendChild(contentDiv);
+
+        menuItemsContainer.appendChild(itemCard);
     }
 
 });
