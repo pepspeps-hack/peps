@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Placeholder for OpenRouter API Key - !!! VUL HIER JE EIGEN KEY IN !!!
     // LET OP: Het is veiliger om de API key via een backend proxy te laten lopen voor een productie applicatie.
     // Voor dit prototype wordt het direct gebruikt, wat een veiligheidsrisico kan zijn.
-    const OPENROUTER_API_KEY = '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'; // VERVANG MET JE ECHTE KEY
+    const OPENROUTER_API_KEY = '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'; // Jouw API Key
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
     menuImageUpload.addEventListener('change', () => {
@@ -99,9 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function performOcr(imageFile) {
         console.log("Starting OCR with Gemini...");
-        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
-            throw new Error("OpenRouter API Key is niet ingesteld of is een generieke placeholder in script.js. Vul je geldige API key in.");
-        }
+        // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
 
         const base64Image = await imageToBase64(imageFile);
 
@@ -167,9 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function processSingleMenuItemWithMistral(itemText, targetLanguage) {
         console.log(`Processing item "${itemText}" with Mistral Nemo for language: ${targetLanguage}`);
-        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
-            throw new Error("OpenRouter API Key is niet ingesteld of is een generieke placeholder in script.js. Vul je geldige API key in.");
-        }
+        // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
 
         const systemPrompt = `Je bent een gespecialiseerde AI-assistent voor het analyseren en uitleggen van restaurantmenu-items.
 Antwoord ALTIJD in een valide JSON-object. De structuur van het JSON-object moet zijn:
@@ -260,9 +256,7 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
         const { vertaald_naam, original_name, keuken, ingredienten } = processedTextData;
         console.log(`Generating image for "${vertaald_naam}" with Llama 3.2 Vision...`);
 
-        if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
-            throw new Error("OpenRouter API Key is niet ingesteld of is een generieke placeholder in script.js. Vul je geldige API key in.");
-        }
+        // Client-side API key check verwijderd zoals gevraagd. Validatie gebeurt door OpenRouter.
 
         // Probeer een generieke garnituur of laat het weg als het te complex wordt.
         const garnituur = "een passende garnering"; // Simpele placeholder
