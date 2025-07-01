@@ -273,9 +273,8 @@ Retourneer het resultaat als een JSON-object zoals gespecificeerd in de system p
         // Veel beeldmodellen hebben specifieke parameters zoals "n" (aantal afbeeldingen), "size", etc.
         // Voor nu houden we het simpel.
         const payload = {
-            model: "meta-llama/llama-3.1-8b-instruct", // TIJDELIJKE PLAATSVERVANGER - MOET DE ECHTE LLAMA 3.2 11B VISION (FREE) ZIJN
-                                                // Controleer de juiste model identifier op OpenRouter!
-                                                // Bijv. "meta-llama/llama-3.2-11b-vision:free" of iets dergelijks.
+            model: "qwen/qwen-vl-chat:free", // Nieuw model voor beeldgeneratie zoals aangegeven (Qwen VL variant)
+                                        // VERIFIEER of dit model text-to-image ondersteunt en dit de correcte gratis ID is.
             messages: [
                 {
                     role: "user",
