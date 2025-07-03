@@ -112,33 +112,35 @@ class TorrentClient:
     def pause_torrent(self, info_hash_str):
         if info_hash_str in self.handles:
             handle = self.handles[info_hash_str]
+            name_display = handle.name() or f"{info_hash_str[:10]}..."
             if not handle.is_valid() or handle.status().has_error:
-                print(f"Cannot pause torrent {handle.name() or info_hash_str[:10]...}: It has an error or is invalid.")
+                print(f"Cannot pause torrent {name_display}: It has an error or is invalid.")
                 return False
             handle.pause()
-            print(f"Paused torrent: {handle.name() or info_hash_str[:10]...}")
+            print(f"Paused torrent: {name_display}")
             return True
         return False
 
     def resume_torrent(self, info_hash_str):
         if info_hash_str in self.handles:
             handle = self.handles[info_hash_str]
+            name_display = handle.name() or f"{info_hash_str[:10]}..."
             if not handle.is_valid() or handle.status().has_error:
-                print(f"Cannot resume torrent {handle.name() or info_hash_str[:10]...}: It has an error or is invalid.")
+                print(f"Cannot resume torrent {name_display}: It has an error or is invalid.")
                 return False
             if handle.status().paused:
                 handle.resume()
-                print(f"Resumed torrent: {handle.name() or info_hash_str[:10]...}")
+                print(f"Resumed torrent: {name_display}")
                 return True
             else:
-                print(f"Torrent {handle.name() or info_hash_str[:10]}... is not paused.")
+                print(f"Torrent {name_display} is not paused.")
                 return False
         return False
 
     def cancel_torrent(self, info_hash_str, remove_files=False):
         if info_hash_str in self.handles:
             handle = self.handles[info_hash_str]
-            handle_name = handle.name() or f"info_hash {info_hash_str[:10]}..." # Get name before removing
+            handle_name = handle.name() or f"info_hash {info_hash_str[:10]}..."
 
             # It's good practice to check if the handle is valid before trying to remove
             if not handle.is_valid():
@@ -204,35 +206,38 @@ class TorrentClient:
         """
         if info_hash_str in self.handles:
             handle = self.handles[info_hash_str]
+            name_display = handle.name() or f"{info_hash_str[:10]}..."
             if not handle.is_valid():
-                print(f"Cannot set priority for invalid torrent {info_hash_str[:10]}...")
+                print(f"Cannot set priority for invalid torrent {name_display}")
                 return False
 
             if priority_up:
                 handle.queue_position_up()
-                print(f"Moved torrent {handle.name() or info_hash_str[:10]}... up in queue.")
+                print(f"Moved torrent {name_display} up in queue.")
             else:
                 handle.queue_position_down()
-                print(f"Moved torrent {handle.name() or info_hash_str[:10]}... down in queue.")
+                print(f"Moved torrent {name_display} down in queue.")
             return True
-        print(f"Torrent {info_hash_str[:10]}... not found for priority change.")
+        print(f"Torrent {info_hash_str[:10]}... not found for priority change.") # Keep info_hash_str here as handle might not be available
         return False
 
     def set_torrent_top_priority(self, info_hash_str):
         if info_hash_str in self.handles:
             handle = self.handles[info_hash_str]
+            name_display = handle.name() or f"{info_hash_str[:10]}..."
             if not handle.is_valid(): return False
             handle.queue_position_top()
-            print(f"Set torrent {handle.name() or info_hash_str[:10]}... to top priority.")
+            print(f"Set torrent {name_display} to top priority.")
             return True
         return False
 
     def set_torrent_bottom_priority(self, info_hash_str):
         if info_hash_str in self.handles:
             handle = self.handles[info_hash_str]
+            name_display = handle.name() or f"{info_hash_str[:10]}..."
             if not handle.is_valid(): return False
             handle.queue_position_bottom()
-            print(f"Set torrent {handle.name() or info_hash_str[:10]}... to bottom priority.")
+            print(f"Set torrent {name_display} to bottom priority.")
             return True
         return False
 
