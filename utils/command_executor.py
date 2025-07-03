@@ -3,6 +3,7 @@
 import os
 import subprocess # For running shell commands
 import webbrowser # For opening web browser
+import urllib.parse # For URL encoding
 
 class CommandExecutor:
     def execute_search(self, query: str):
@@ -12,14 +13,19 @@ class CommandExecutor:
         In a real application, this could open a search engine in a browser.
         """
         print(f"Executing search for: '{query}'")
-        # Example: Open Google search (requires internet and browser)
-        # try:
-        #     search_url = f"https://www.google.com/search?q={query}"
-        #     webbrowser.open(search_url)
-        #     print(f"Opened browser for search: {query}")
-        # except Exception as e:
-        #     print(f"Error opening browser for search: {e}")
-        return f"Search initiated for '{query}'."
+        try:
+            # Construct a Google search URL. User can change this to their preferred engine.
+            # We should URL-encode the query.
+            # import urllib.parse # Moved to top of file
+            encoded_query = urllib.parse.quote_plus(query)
+            search_url = f"https://www.google.com/search?q={encoded_query}"
+
+            webbrowser.open(search_url, new=2) # new=2 attempts to open in a new tab
+            print(f"Attempted to open browser for search: {query} at {search_url}")
+            return f"Search for '{query}' opened in browser."
+        except Exception as e:
+            print(f"Error opening browser for search '{query}': {e}")
+            return f"Error opening browser for search '{query}': {e}. Check if a browser is available."
 
     def execute_sort_files(self, folder_path: str = "."):
         """
@@ -52,12 +58,15 @@ class CommandExecutor:
         try:
             # Basic check if it's a URL
             if task_or_url.startswith("http://") or task_or_url.startswith("https://"):
-                webbrowser.open(task_or_url)
+                webbrowser.open(task_or_url, new=2) # new=2 attempts to open in a new tab
+                print(f"Attempted to open URL: {task_or_url}")
                 return f"Opened URL: {task_or_url}"
             else:
                 # For a general task, perform a search (similar to execute_search)
-                search_url = f"https://www.google.com/search?q={task_or_url.replace(' ', '+')}"
-                webbrowser.open(search_url)
+                encoded_task = urllib.parse.quote_plus(task_or_url)
+                search_url = f"https://www.google.com/search?q={encoded_task}"
+                webbrowser.open(search_url, new=2) # new=2 attempts to open in a new tab
+                print(f"Attempted to open browser to search for: {task_or_url} at {search_url}")
                 return f"Opened browser to search for: {task_or_url}"
         except Exception as e:
             # webbrowser.open might not work in all environments (e.g. headless server)
