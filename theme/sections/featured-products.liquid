@@ -1,0 +1,204 @@
+{% comment %}
+  Aanbevolen Producten Sectie
+  - Selecteer een collectie om producten uit te tonen
+  - Aanpasbaar aantal producten en kolommen
+  - Aanpasbare titel
+{% endcomment %}
+
+<div class="page-width featured-products-section">
+  {% if section.settings.title != blank %}
+    <div class="section-header text-center">
+      <h2>{{ section.settings.title | escape }}</h2>
+      <hr class="hr--small">
+    </div>
+  {% endif %}
+
+  {%- assign collection = collections[section.settings.featured_collection] -%}
+  {%- assign product_limit = section.settings.products_to_show -%}
+  {%- assign products_per_row = section.settings.products_per_row -%}
+
+  <div class="grid grid--uniform">
+    {% if collection.products.size > 0 %}
+      {% for product in collection.products limit: product_limit %}
+        <div class="grid__item {% if products_per_row == 2 %}medium-up--one-half{% elsif products_per_row == 3 %}medium-up--one-third{% else %}medium-up--one-quarter{% endif %}">
+          {% include 'product-card', product: product %}
+        </div>
+      {% endfor %}
+    {% else %}
+      {% comment %} Toon placeholder producten als geen collectie is geselecteerd of collectie leeg is {% endcomment %}
+      {% for i in (1..product_limit) %}
+        <div class="grid__item {% if products_per_row == 2 %}medium-up--one-half{% elsif products_per_row == 3 %}medium-up--one-third{% else %}medium-up--one-quarter{% endif %}">
+          <div class="product-card">
+            <a href="#" class="product-card__image-wrapper">
+              {{ 'product-' | append: i | placeholder_svg_tag: 'placeholder-svg' }}
+            </a>
+            <div class="product-card__info">
+              <a href="#" class="product-card__title">
+                {{ 'homepage.onboarding.product_title' | t }}
+              </a>
+              <div class="product-card__price">
+                {{ 1999 | money }}
+              </div>
+               <a href="#" class="product-card__view-button">
+                {{ 'products.product.view_product' | t | default: 'View Product' }}
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {% if section.settings.show_view_all_button and section.settings.featured_collection != blank and collection.products.size > 0 %}
+    <div class="text-center" style="margin-top: 30px;">
+      <a href="{{ routes.collections_url }}/{{ section.settings.featured_collection }}" class="btn">
+        {{ 'sections.featured_products.view_all' | t }}
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+.featured-products-section {
+  padding-top: {{ section.settings.padding_top }}px;
+  padding-bottom: {{ section.settings.padding_bottom }}px;
+}
+
+.featured-products-section .section-header {
+  margin-bottom: 30px;
+}
+.featured-products-section .section-header h2 {
+  font-size: 1.8em; /* Iets kleiner dan pagina H1 */
+}
+.hr--small {
+  width: 60px;
+  margin: 15px auto;
+  border-color: var(--color-accent, #ccc); /* Gebruik accentkleur of fallback */
+  border-top-width: 2px;
+}
+
+/* De product-card stijlen komen van collection.liquid of een globale snippet stijl.
+   Hieronder specifieke grid aanpassingen indien nodig. */
+
+.featured-products-section .grid--uniform {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -15px; /* Gutter compensatie */
+  margin-right: -15px; /* Gutter compensatie */
+}
+
+.featured-products-section .grid__item {
+  padding-left: 15px; /* Gutter */
+  padding-right: 15px; /* Gutter */
+  margin-bottom: 30px;
+  box-sizing: border-box;
+  width: 100%; /* Mobiel eerst: 1 kolom */
+}
+
+/* Responsive kolommen gebaseerd op settings */
+/* Medium schermen en groter */
+@media screen and (min-width: 750px) { /* Shopify's medium-up breakpoint */
+  .featured-products-section .grid__item.medium-up--one-half {
+    width: 50%;
+  }
+  .featured-products-section .grid__item.medium-up--one-third {
+    width: 33.3333%;
+  }
+  .featured-products-section .grid__item.medium-up--one-quarter {
+    width: 25%;
+  }
+}
+
+/* Grote schermen en groter (indien verschillend van medium) */
+/* Bijv. als je op grote schermen altijd 4 kolommen wilt, ongeacht de medium setting */
+@media screen and (min-width: 990px) { /* Shopify's large-up breakpoint */
+  /* Hier kun je large-up specifieke klassen toevoegen als je wilt dat het gedrag verandert
+     t.o.v. medium-up. Voor nu gebruiken we dezelfde klassen als in de Liquid. */
+}
+
+.placeholder-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 250px; /* Consistent met product-card */
+  background-color: #f0f0f0;
+  border: 1px solid #e0e0e0;
+}
+</style>
+
+{% schema %}
+{
+  "name": "Aanbevolen Producten",
+  "tag": "section",
+  "class": "section-featured-products",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titel",
+      "default": "Aanbevolen Producten"
+    },
+    {
+      "type": "collection",
+      "id": "featured_collection",
+      "label": "Selecteer Collectie"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Aantal Producten om te Tonen",
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "products_per_row",
+      "label": "Producten per Rij (Desktop)",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all_button",
+      "label": "Toon 'Bekijk Alles' Knop",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Sectie Afstand"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bovenkant",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Onderkant",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Aanbevolen Producten",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}

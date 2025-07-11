@@ -1,0 +1,90 @@
+/* Basisstijlen - Worden later uitgebreid en gebruiken nu CSS variabelen uit theme.liquid */
+body {
+  /* font-family, background-color, color worden nu via :root en CSS variabelen in theme.liquid ingesteld */
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: var(--color-secondary); /* Gebruik een van de gedefinieerde kleuren */
+  padding: 20px;
+  border-bottom: 1px solid #eee; /* Kan ook een CSS variabele worden */
+  text-align: center;
+}
+.header__logo-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+.header__logo-area img {
+  display: block; /* Zorgt dat img correct behandeld wordt in flex container */
+}
+.header__logo-area h1 a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* Pas de bestaande h1 stijl aan als die nog globaal is */
+h1 { /* Dit is een algemene h1, header h1 is specifieker indien nodig */
+  margin: 0; /* Verplaatst van header h1 naar algemene h1 of specifieke .header__logo-area h1 */
+  font-size: 2em; /* Blijft, maar font-family wordt door :root bepaald */
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+nav ul li {
+  display: inline-block;
+  margin-right: 15px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #555;
+}
+
+nav ul li a:hover {
+  color: #000;
+}
+
+main {
+  padding: 20px;
+  min-height: 60vh; /* Zorgt ervoor dat de footer niet omhoog kruipt */
+}
+
+footer {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+footer a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Voorbeeld van stijlen voor een luxe uitstraling - placeholder */
+.luxe-text {
+  font-family: 'Times New Roman', Times, serif; /* Of een ander elegant lettertype */
+  color: #222;
+}
+
+.button-primary {
+  background-color: #000;
+  color: #fff;
+  padding: 10px 20px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-primary:hover {
+  background-color: #444;
+}

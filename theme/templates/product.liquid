@@ -1,0 +1,270 @@
+<div class="page-width">
+  <div class="grid product-single">
+    <div class="grid__item medium-up--one-half">
+      {% comment %} Productafbeelding {% endcomment %}
+      <div class="product-single__photo-wrapper">
+        {% assign current_variant = product.selected_or_first_available_variant %}
+        <img src="{{ current_variant.image | img_url: 'large' }}" alt="{{ current_variant.image.alt | escape }}" id="ProductPhotoImg">
+      </div>
+      {% comment %} Thumbnails, indien meerdere afbeeldingen {% endcomment %}
+      {% if product.images.size > 1 %}
+        <ul class="product-single__thumbnails grid-uniform">
+          {% for image in product.images %}
+            <li class="grid__item medium-up--one-quarter">
+              <a href="{{ image.src | img_url: 'large' }}" data-thumbnail-id="{{ image.id }}">
+                <img src="{{ image.src | img_url: 'compact' }}" alt="{{ image.alt | escape }}">
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="grid__item medium-up--one-half">
+      <div class="product-single__meta">
+        <h1 class="product-single__title">{{ product.title }}</h1>
+
+        <div class="product__price">
+          {{ current_variant.price | money }}
+          {% if current_variant.compare_at_price > current_variant.price %}
+            <s class="product__price--compare">{{ current_variant.compare_at_price | money }}</s>
+          {% endif %}
+        </div>
+
+        {% comment %} Productformulier {% endcomment %}
+        {% form 'product', product %}
+          {% unless product.has_only_default_variant %}
+            {% for option in product.options_with_values %}
+              <div class="selector-wrapper js product-form__item">
+                <label for="SingleOptionSelector-{{ forloop.index0 }}">
+                  {{ option.name }}
+                </label>
+                <select
+                  class="single-option-selector single-option-selector-{{ section.id }} product-form__input"
+                  id="SingleOptionSelector-{{ forloop.index0 }}"
+                  data-index="option{{ forloop.index }}">
+                  {% for value in option.values %}
+                    <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>
+                      {{ value }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endfor %}
+          {% endunless %}
+
+          <select name="id" id="ProductSelect" class="product-form__variants no-js">
+            {% for variant in product.variants %}
+              {% if variant.available %}
+                <option {% if variant == current_variant %}selected="selected"{% endif %} value="{{ variant.id }}">
+                  {{ variant.title }} - {{ variant.price | money_with_currency }}
+                </option>
+              {% else %}
+                <option disabled="disabled">{{ variant.title }} - Sold Out</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+
+          <div class="product-form__item product-form__item--quantity">
+            <label for="Quantity">{{ 'products.product.quantity' | t }}</label>
+            <input type="number" id="Quantity" name="quantity" value="1" min="1" class="product-form__input product-form__input--quantity">
+          </div>
+
+          <div class="product-form__item product-form__item--submit">
+            <button type="submit" name="add" class="btn product-form__cart-submit" {% unless current_variant.available %}disabled="disabled"{% endunless %}>
+              <span id="AddToCartText">
+                {% if current_variant.available %}
+                  {{ 'products.product.add_to_cart' | t }}
+                {% else %}
+                  {{ 'products.product.sold_out' | t }}
+                {% endif %}
+              </span>
+            </button>
+          </div>
+        {% endform %}
+
+        <div class="product-single__description rte">
+          {{ product.description }}
+        </div>
+
+        {% comment %} Productrecensies komen hier (vereist app of custom code) {% endcomment %}
+        <div id="shopify-product-reviews" data-id="{{product.id}}">{{ product.metafields.spr.reviews }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Logica voor variant selectie (vereenvoudigd)
+  // Een robuustere oplossing zou een Shopify-specifieke JS library gebruiken
+  document.addEventListener('DOMContentLoaded', function() {
+    const productForm = document.querySelector('form[action="/cart/add"]');
+    if (productForm) {
+      const variantSelect = productForm.querySelector('select[name="id"]');
+      const addToCartButton = productForm.querySelector('button[name="add"]');
+      const addToCartText = productForm.querySelector('#AddToCartText');
+      const productPrice = document.querySelector('.product__price'); // Aanpassing nodig voor correcte selector
+      const productPhoto = document.getElementById('ProductPhotoImg');
+
+      if (variantSelect) {
+        variantSelect.addEventListener('change', function(event) {
+          const selectedVariantId = event.target.value;
+          const selectedVariant = {{ product.variants | json }}.find(v => v.id == selectedVariantId);
+
+          if (selectedVariant) {
+            // Update prijs (vereenvoudigd, valuta niet afgehandeld)
+            if (productPrice) {
+                let priceHtml = Shopify.formatMoney(selectedVariant.price, "{{ shop.money_format }}");
+                if (selectedVariant.compare_at_price > selectedVariant.price) {
+                    priceHtml += ` <s class="product__price--compare">${Shopify.formatMoney(selectedVariant.compare_at_price, "{{ shop.money_format }}")}</s>`;
+                }
+                productPrice.innerHTML = priceHtml;
+            }
+
+            // Update "Add to cart" knop
+            if (selectedVariant.available) {
+              addToCartButton.disabled = false;
+              addToCartText.textContent = "{{ 'products.product.add_to_cart' | t }}";
+            } else {
+              addToCartButton.disabled = true;
+              addToCartText.textContent = "{{ 'products.product.sold_out' | t }}";
+            }
+
+            // Update afbeelding (indien variant een afbeelding heeft)
+            if (selectedVariant.featured_image && productPhoto) {
+              productPhoto.src = selectedVariant.featured_image.src.replace(/(\.[^.]*)$/, "_large$1"); // Pas aan voor juiste grootte
+              productPhoto.alt = selectedVariant.featured_image.alt;
+            }
+          }
+        });
+      }
+    }
+
+    // Thumbnail click logic
+    const thumbnails = document.querySelectorAll('.product-single__thumbnails a');
+    thumbnails.forEach(thumb => {
+      thumb.addEventListener('click', function(e) {
+        e.preventDefault();
+        const mainImage = document.getElementById('ProductPhotoImg');
+        mainImage.src = this.href; // this.href is de grote afbeeldings URL
+        // Optioneel: update alt tekst
+        // mainImage.alt = this.querySelector('img').alt;
+      });
+    });
+  });
+</script>
+
+<style>
+/* Specifieke stijlen voor productpagina */
+.product-single {
+  display: flex;
+  flex-wrap: wrap;
+}
+.product-single__photo-wrapper {
+  margin-bottom: 20px;
+}
+.product-single__photo-wrapper img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #eee; /* Voor een subtiele rand */
+}
+.product-single__thumbnails {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Ruimte tussen thumbnails */
+}
+.product-single__thumbnails li {
+  flex: 0 0 calc(25% - 7.5px); /* 4 thumbnails per rij, rekening houdend met gap */
+}
+.product-single__thumbnails img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+.product-single__thumbnails img:hover {
+  border-color: #aaa;
+}
+.product-single__meta {
+  padding-left: 20px; /* Ruimte naast de afbeelding */
+}
+@media (max-width: 768px) { /* Medium-up breakpoint */
+  .product-single__meta {
+    padding-left: 0;
+    margin-top: 20px;
+  }
+}
+.product-single__title {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+}
+.product__price {
+  font-size: 1.4em;
+  margin-bottom: 20px;
+  color: #d9534f; /* Een accentkleur voor de prijs */
+}
+.product__price--compare {
+  text-decoration: line-through;
+  color: #777;
+  font-size: 0.8em;
+  margin-left: 10px;
+}
+.selector-wrapper {
+  margin-bottom: 15px;
+}
+.selector-wrapper label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.single-option-selector {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.product-form__item--quantity {
+  margin-bottom: 15px;
+}
+.product-form__input--quantity {
+  width: 60px;
+  padding: 8px;
+  text-align: center;
+}
+.product-form__cart-submit {
+  /* Gebruik .button-primary stijl van style.css of definieer hier opnieuw */
+  background-color: #000;
+  color: #fff;
+  padding: 12px 25px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 1em;
+  width: 100%; /* Maak knop volledige breedte */
+}
+.product-form__cart-submit:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.product-form__cart-submit:hover:not(:disabled) {
+  background-color: #444;
+}
+.product-single__description {
+  margin-top: 20px;
+  line-height: 1.6;
+}
+#shopify-product-reviews {
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+/* Hide no-js elements when JS is enabled */
+.no-js { display: none; }
+</style>

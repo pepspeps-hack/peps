@@ -1,0 +1,176 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Clean Luxe Mode Thema",
+    "theme_version": "1.0.0",
+    "theme_author": "Jules AI Agent",
+    "theme_documentation_url": "https://example.com/documentation",
+    "theme_support_url": "https://example.com/support"
+  },
+  {
+    "name": "Kleuren",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Algemene Kleuren"
+      },
+      {
+        "type": "color",
+        "id": "color_primary",
+        "label": "Primaire kleur",
+        "default": "#000000",
+        "info": "Hoofdkleur voor knoppen en accenten."
+      },
+      {
+        "type": "color",
+        "id": "color_secondary",
+        "label": "Secundaire kleur",
+        "default": "#FFFFFF",
+        "info": "Gebruikt voor achtergronden of contrasterende elementen."
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Accentkleur",
+        "default": "#D9534F",
+        "info": "Voor prijzen, badges of speciale meldingen."
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Tekstkleur",
+        "default": "#333333"
+      },
+      {
+        "type": "color",
+        "id": "color_body_bg",
+        "label": "Achtergrondkleur body",
+        "default": "#F9F9F9"
+      }
+    ]
+  },
+  {
+    "name": "Typografie",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Lettertypen"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_heading",
+        "label": "Lettertype voor Koppen",
+        "default": "helvetica_n4" // n4 = normal 400 weight
+      },
+      {
+        "type": "font_picker",
+        "id": "font_body",
+        "label": "Lettertype voor Body Tekst",
+        "default": "helvetica_n4"
+      }
+    ]
+  },
+  {
+    "name": "Header",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Winkel Logo"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo_image",
+        "label": "Logo Afbeelding"
+      },
+      {
+        "type": "range",
+        "id": "logo_max_width",
+        "min": 50,
+        "max": 450,
+        "step": 10,
+        "unit": "px",
+        "label": "Maximale Logo Breedte",
+        "default": 250
+      }
+    ]
+  },
+  {
+    "name": "Pop-up Nieuwsbrief",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Instellingen Nieuwsbrief Pop-up"
+      },
+      {
+        "type": "checkbox",
+        "id": "popup_enable",
+        "label": "Pop-up Activeren",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "popup_title",
+        "label": "Pop-up Titel",
+        "default": "Schrijf je in & Krijg Korting!"
+      },
+      {
+        "type": "richtext",
+        "id": "popup_text",
+        "label": "Pop-up Tekst",
+        "default": "<p>Meld je aan voor onze nieuwsbrief en ontvang <strong>10% korting</strong> op je eerste bestelling.</p>"
+      },
+      {
+        "type": "text",
+        "id": "popup_button_text",
+        "label": "Knoptekst",
+        "default": "Inschrijven"
+      },
+      {
+        "type": "url",
+        "id": "popup_mailchimp_url",
+        "label": "Mailchimp Formulier URL (optioneel)",
+        "info": "Als je Mailchimp gebruikt, plak hier de 'embedded form' URL."
+      },
+      {
+        "type": "range",
+        "id": "popup_delay",
+        "min": 0,
+        "max": 60,
+        "step": 1,
+        "unit": "s",
+        "label": "Vertraging (seconden)",
+        "default": 5,
+        "info": "Hoeveel seconden wachten voordat de pop-up verschijnt. 0 voor direct."
+      }
+    ]
+  },
+  {
+    "name": "Social Media",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Links naar Social Media"
+      },
+      {
+        "type": "text",
+        "id": "social_facebook_link",
+        "label": "Facebook Link"
+      },
+      {
+        "type": "text",
+        "id": "social_instagram_link",
+        "label": "Instagram Link"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok_link",
+        "label": "TikTok Link"
+      },
+      {
+        "type": "text",
+        "id": "social_pinterest_link",
+        "label": "Pinterest Link"
+      }
+    ]
+  }
+]

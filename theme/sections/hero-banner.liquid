@@ -1,0 +1,272 @@
+{% comment %}
+  Hero Banner Sectie
+  - Aanpasbare afbeelding
+  - Aanpasbare titel
+  - Aanpasbare tekst
+  - Aanpasbare knop (tekst en link)
+  - Opties voor tekstuitlijning en overlay
+{% endcomment %}
+
+<div class="hero-banner"
+     style="background-image: url('{{ section.settings.image | img_url: '2048x' }}');
+            min-height: {{ section.settings.section_height }}vh;
+            color: {{ section.settings.text_color }};">
+  {% if section.settings.overlay_enable %}
+    <div class="hero-banner__overlay" style="background-color: rgba(0,0,0, {{ section.settings.overlay_opacity | divided_by: 100.0 }});"></div>
+  {% endif %}
+  <div class="hero-banner__content hero-banner__content--{{ section.settings.text_alignment }}">
+    <div class="hero-banner__text-wrap">
+      {% if section.settings.title != blank %}
+        <h2 class="hero-banner__title">{{ section.settings.title | escape }}</h2>
+      {% endif %}
+      {% if section.settings.text != blank %}
+        <div class="hero-banner__text rte">{{ section.settings.text }}</div>
+      {% endif %}
+      {% if section.settings.button_label != blank and section.settings.button_link != blank %}
+        <a href="{{ section.settings.button_link }}" class="btn hero-banner__button">
+          {{ section.settings.button_label | escape }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.hero-banner {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center; /* Default, kan overschreven worden */
+  padding: 40px 20px; /* Padding voor kleinere schermen */
+}
+
+.hero-banner__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-banner__content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px; /* Max breedte voor de tekstinhoud */
+  width: 100%;
+}
+
+.hero-banner__content--left {
+  text-align: left;
+  margin-left: auto; /* Schuift naar links als container breder is */
+  margin-right: auto; /* Behoud centreren op mobiel */
+  display: flex; /* Om text-align: left te forceren */
+  justify-content: flex-start;
+}
+.hero-banner__content--right {
+  text-align: right;
+  margin-left: auto;
+  margin-right: auto; /* Behoud centreren op mobiel */
+  display: flex;
+  justify-content: flex-end;
+}
+.hero-banner__content--center {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+}
+
+
+.hero-banner__title {
+  font-size: 2.5em; /* Groter voor hero */
+  margin-bottom: 15px;
+  font-weight: bold; /* Of gebruik heading font weight */
+  line-height: 1.2;
+}
+
+.hero-banner__text {
+  font-size: 1.2em;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+.hero-banner__text p {
+    margin-bottom: 0.5em; /* Ruimte tussen paragrafen in RTE */
+}
+
+.hero-banner__button {
+  /* Stijlen komen van .btn of .button-primary, maar kunnen hier specifiek worden */
+  padding: 12px 30px;
+  font-size: 1.1em;
+  text-decoration: none;
+  color: {{ section.settings.button_text_color }};
+  background-color: {{ section.settings.button_background_color }};
+  border: 1px solid {{ section.settings.button_border_color }};
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.hero-banner__button:hover {
+  background-color: {{ section.settings.button_background_hover_color }};
+  color: {{ section.settings.button_text_hover_color }};
+  border-color: {{ section.settings.button_border_hover_color }};
+}
+
+
+@media (max-width: 768px) {
+  .hero-banner__title {
+    font-size: 2em;
+  }
+  .hero-banner__text {
+    font-size: 1em;
+  }
+  .hero-banner__content--left,
+  .hero-banner__content--right,
+  .hero-banner__content--center {
+    text-align: center; /* Forceer centreren op mobiel voor leesbaarheid */
+    justify-content: center;
+  }
+  .hero-banner__text-wrap {
+      padding: 0 10px; /* Voorkom dat tekst aan randen plakt */
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "tag": "section",
+  "class": "section-hero-banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Achtergrondafbeelding"
+    },
+    {
+      "type": "range",
+      "id": "section_height",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "label": "Sectie Hoogte (in % van schermhoogte)",
+      "default": 70
+    },
+    {
+      "type": "header",
+      "content": "Tekst & Knop"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Titel",
+      "default": "Welkom bij Onze Winkel"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Tekst",
+      "default": "<p>Ontdek onze nieuwste collectie en exclusieve aanbiedingen.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Knop Tekst",
+      "default": "Shop Nu"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Knop Link"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Tekstuitlijning",
+      "options": [
+        { "value": "left", "label": "Links" },
+        { "value": "center", "label": "Midden" },
+        { "value": "right", "label": "Rechts" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Kleuren & Overlay"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Tekstkleur",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_enable",
+      "label": "Overlay Inschakelen",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay Opaciteit",
+      "default": 30
+    },
+    {
+        "type": "header",
+        "content": "Knopkleuren"
+    },
+    {
+        "type": "color",
+        "id": "button_text_color",
+        "label": "Knop Tekstkleur",
+        "default": "#FFFFFF"
+    },
+    {
+        "type": "color",
+        "id": "button_background_color",
+        "label": "Knop Achtergrondkleur",
+        "default": "#000000"
+    },
+    {
+        "type": "color",
+        "id": "button_border_color",
+        "label": "Knop Randkleur",
+        "default": "#000000"
+    },
+    {
+        "type": "color",
+        "id": "button_text_hover_color",
+        "label": "Knop Tekstkleur (Hover)",
+        "default": "#000000"
+    },
+    {
+        "type": "color",
+        "id": "button_background_hover_color",
+        "label": "Knop Achtergrondkleur (Hover)",
+        "default": "#FFFFFF"
+    },
+    {
+        "type": "color",
+        "id": "button_border_hover_color",
+        "label": "Knop Randkleur (Hover)",
+        "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Banner",
+      "category": "Afbeelding"
+    }
+  ]
+}
+{% endschema %}

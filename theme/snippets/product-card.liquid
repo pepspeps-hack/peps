@@ -1,0 +1,53 @@
+{% comment %}
+  Snippet voor het weergeven van een productkaart.
+  Wordt gebruikt in collection.liquid en mogelijk andere plaatsen (bijv. aanbevolen producten sectie).
+
+  Parameters:
+  - product: het product object
+  - class (optioneel): extra CSS class voor de kaart
+{% endcomment %}
+
+<div class="product-card {{ class }}">
+  <a href="{{ product.url | within: collection }}" class="product-card__image-wrapper">
+    {% if product.featured_image %}
+      <img src="{{ product.featured_image | img_url: 'medium' }}" alt="{{ product.featured_image.alt | escape }}">
+    {% else %}
+      {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    {% endif %}
+  </a>
+
+  <div class="product-card__info">
+    <a href="{{ product.url | within: collection }}" class="product-card__title">
+      {{ product.title }}
+    </a>
+
+    <div class="product-card__price">
+      {% if product.compare_at_price > product.price %}
+        <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+        <s class="old-price">{{ product.compare_at_price | money }}</s>
+        <span class="visually-hidden">{{ 'products.product.sale_price' | t }}</span>
+        {{ product.price | money }}
+      {% else %}
+        <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+        {{ product.price | money }}
+      {% endif %}
+    </div>
+
+    {% comment %} Optioneel: Toon 'Add to cart' of 'View product' knop {% endcomment %}
+    {% if product.available %}
+      {% comment %}
+      <form method="post" action="/cart/add">
+        <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+        <button type="submit" class="button-primary product-card__add-to-cart">
+          {{ 'products.product.add_to_cart' | t }}
+        </button>
+      </form>
+      {% endcomment %}
+       <a href="{{ product.url | within: collection }}" class="product-card__view-button">
+        {{ 'products.product.view_product' | t | default: 'View Product' }}
+      </a>
+    {% else %}
+      <span class="product-card__sold-out">{{ 'products.product.sold_out' | t }}</span>
+    {% endif %}
+  </div>
+</div>

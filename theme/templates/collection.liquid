@@ -1,0 +1,177 @@
+<div class="page-width">
+  <div class="section-header text-center">
+    <h1>{{ collection.title }}</h1>
+    {% if collection.description != blank %}
+      <div class="rte">
+        {{ collection.description }}
+      </div>
+    {% endif %}
+  </div>
+
+  {% paginate collection.products by 12 %}
+    {% if collection.products.size > 0 %}
+      <div class="grid grid--uniform grid--view-items">
+        {% for product in collection.products %}
+          <div class="grid__item medium-up--one-third large-up--one-quarter">
+            {% include 'product-card', product: product %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if paginate.pages > 1 %}
+        <div class="pagination">
+          {{ paginate | default_pagination | replace: '&laquo; Previous', '&larr;' | replace: 'Next &raquo;', '&rarr;' }}
+        </div>
+      {% endif %}
+    {% else %}
+      <p>{{ 'collections.general.no_matches' | t }}</p>
+    {% endif %}
+  {% endpaginate %}
+</div>
+
+{% comment %} Stijlen specifiek voor de collectiepagina {% endcomment %}
+<style>
+.grid--view-items {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -15px; /* Compenseer voor padding op grid__item */
+  margin-right: -15px; /* Compenseer voor padding op grid__item */
+}
+
+.grid__item {
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-bottom: 30px; /* Ruimte tussen productrijen */
+  box-sizing: border-box;
+}
+
+/* Responsive aanpassingen voor kolommen */
+/* Standaard (mobiel eerst): 1 kolom */
+.grid__item.medium-up--one-third {
+  width: 100%;
+}
+.grid__item.large-up--one-quarter {
+   width: 100%;
+}
+
+/* Medium schermen en groter: 3 kolommen */
+@media screen and (min-width: 750px) { /* Shopify's medium-up breakpoint */
+  .grid__item.medium-up--one-third {
+    width: 33.3333%;
+  }
+  .grid__item.large-up--one-quarter {
+    width: 33.3333%; /* Behoud 3 kolommen als large-up niet specifieker is */
+  }
+}
+
+/* Grote schermen en groter: 4 kolommen */
+@media screen and (min-width: 990px) { /* Shopify's large-up breakpoint */
+  .grid__item.large-up--one-quarter {
+    width: 25%;
+  }
+}
+
+
+.product-card {
+  text-align: center;
+  border: 1px solid #eee;
+  padding: 15px;
+  background-color: #fff;
+  height: 100%; /* Zorgt dat kaarten even hoog zijn in een rij */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-card__image-wrapper {
+  display: block;
+  margin-bottom: 10px;
+  position: relative; /* Voor eventuele badges of hover effecten */
+}
+
+.product-card__image-wrapper img {
+  max-width: 100%;
+  height: auto;
+  max-height: 250px; /* Voorkom te grote afbeeldingen */
+  object-fit: contain; /* Zorg dat de afbeelding past zonder vervorming */
+}
+
+.product-card__title {
+  font-size: 1.1em;
+  margin: 0 0 5px 0;
+  font-weight: normal;
+  color: #333;
+  text-decoration: none; /* Als de titel een link is */
+}
+
+.product-card__price {
+  font-size: 1em;
+  color: #d9534f; /* Accentkleur, consistent met productpagina */
+  margin-bottom: 10px;
+}
+
+.product-card__price .old-price {
+    text-decoration: line-through;
+    color: #777;
+    font-size: 0.9em;
+    margin-left: 5px;
+}
+
+.product-card__view-button {
+  /* Gebruik .button-primary stijl of definieer hier */
+  background-color: #555;
+  color: #fff;
+  padding: 8px 15px;
+  text-decoration: none;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+  font-size: 0.9em;
+  display: inline-block; /* Zodat padding werkt */
+}
+
+.product-card__view-button:hover {
+  background-color: #000;
+}
+
+.pagination {
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.pagination a, .pagination span {
+  padding: 8px 12px;
+  margin: 0 3px;
+  border: 1px solid #ddd;
+  text-decoration: none;
+  color: #333;
+  border-radius: 3px;
+}
+
+.pagination .current {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.pagination a:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+.rte { /* Rich Text Editor content */
+  margin-bottom: 20px;
+}
+.section-header {
+  margin-bottom: 30px;
+}
+.section-header h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+</style>
+
+{% comment %}
+  Het 'product-card' snippet wordt gebruikt om elk product in de grid weer te geven.
+  Dit moet aangemaakt worden in snippets/product-card.liquid
+{% endcomment %}
