@@ -17,6 +17,9 @@
   {%- assign font_heading = settings.font_heading -%}
   {%- assign font_body = settings.font_body -%}
 
+  {{ font_heading | font_face: font_display: 'swap' }}
+  {{ font_body | font_face: font_display: 'swap' }}
+
   <style>
     :root {
       --color-primary: {{ settings.color_primary }};
@@ -28,28 +31,54 @@
       --font-heading-family: {{ font_heading.family }}, {{ font_heading.fallback_families }};
       --font-heading-style: {{ font_heading.style }};
       --font-heading-weight: {{ font_heading.weight }};
+      --font-heading-scale: 1.0; /* Basis schaalfactor */
 
       --font-body-family: {{ font_body.family }}, {{ font_body.fallback_families }};
       --font-body-style: {{ font_body.style }};
       --font-body-weight: {{ font_body.weight }};
+      --font-body-scale: 1.0; /* Basis schaalfactor */
+      --font-body-lh: 1.6; /* Line height voor body */
     }
     body {
       font-family: var(--font-body-family);
       font-style: var(--font-body-style);
       font-weight: var(--font-body-weight);
+      font-size: calc(16px * var(--font-body-scale)); /* Basisgrootte aanpasbaar met schaal */
+      line-height: var(--font-body-lh);
       background-color: var(--color-body-bg);
       color: var(--color-text);
+      -webkit-font-smoothing: antialiased; /* Betere rendering op Webkit */
+      -moz-osx-font-smoothing: grayscale; /* Betere rendering op Firefox */
     }
     h1, h2, h3, h4, h5, h6 {
       font-family: var(--font-heading-family);
       font-style: var(--font-heading-style);
       font-weight: var(--font-heading-weight);
+      line-height: 1.2; /* Strakkere line-height voor koppen */
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
     }
-    .button-primary { /* Voorbeeld van gebruik van CSS variabele */
+    /* Responsive typografie schalen */
+    h1 { font-size: calc(2.8em * var(--font-heading-scale)); }
+    h2 { font-size: calc(2.2em * var(--font-heading-scale)); }
+    h3 { font-size: calc(1.8em * var(--font-heading-scale)); }
+    h4 { font-size: calc(1.5em * var(--font-heading-scale)); }
+    h5 { font-size: calc(1.2em * var(--font-heading-scale)); }
+    h6 { font-size: calc(1.0em * var(--font-heading-scale)); }
+
+    @media screen and (max-width: 768px) {
+      h1 { font-size: calc(2.2em * var(--font-heading-scale)); }
+      h2 { font-size: calc(1.8em * var(--font-heading-scale)); }
+      h3 { font-size: calc(1.5em * var(--font-heading-scale)); }
+    }
+
+
+    .button-primary {
       background-color: var(--color-primary);
-      color: var(--color-secondary); /* Aangenomen dat secundaire kleur goed contrasteert */
+      color: var(--color-secondary);
+      /* Verdere styling in style.css */
     }
-    .product__price, .product-card__price { /* Voorbeeld van accentkleur */
+    .product__price, .product-card__price {
         color: var(--color-accent);
     }
   </style>
@@ -59,34 +88,159 @@
 </head>
 <body>
 
-  <header role="banner">
-    <div class="header__logo-area">
-      {% if settings.logo_image != blank %}
-        <a href="{{ routes.root_url }}" style="max-width: {{ settings.logo_max_width }}px;">
-          <img src="{{ settings.logo_image | img_url: 'master' }}"
-               alt="{{ settings.logo_image.alt | default: shop.name | escape }}"
-               style="max-width: 100%; height: auto;">
+  <div id="page-container"> {# Wrapper voor sticky footer #}
+    {% comment %} Sticky header class wordt dynamisch toegevoegd via JS indien ingeschakeld {% endcomment %}
+    <header role="banner" class="site-header header-layout--{{ settings.header_layout }}{% if settings.sticky_header_enable %} is-sticky-enabled{% endif %}">
+      <div class="page-width header__content">
+        <div class="header__logo-area">
+          {% if settings.logo_image != blank %}
+            <a href="{{ routes.root_url }}" class="header__logo-link" style="max-width: {{ settings.logo_max_width }}px;">
+              <img src="{{ settings.logo_image | img_url: 'master' }}"
+                   alt="{{ settings.logo_image.alt | default: shop.name | escape }}"
+                   class="header__logo-image">
+            </a>
+          {% else %}
+            <h1 class="header__shop-name"><a href="{{ routes.root_url }}">{{ shop.name }}</a></h1>
+          {% endif %}
+        </div>
+
+        {% if linklists['main-menu'].links.size > 0 %}
+          <nav role="navigation" class="site-nav header__navigation">
+            <ul class="site-nav__list">
+              {% for link in linklists['main-menu'].links %}
+                <li class="site-nav__item {% if link.active %}site-nav__item--active{% endif %}">
+                  <a href="{{ link.url }}" class="site-nav__link">{{ link.title }}</a>
+                  {% if link.links.size > 0 %}
+                    <ul class="site-nav__dropdown">
+                      {% for child_link in link.links %}
+                        <li class="site-nav__dropdown-item {% if child_link.active %}site-nav__dropdown-item--active{% endif %}">
+                          <a href="{{ child_link.url }}" class="site-nav__dropdown-link">{{ child_link.title }}</a>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        {% endif %}
+
+        <div class="header__icons">
+          {% comment %} Zoekicoon, Accounticoon, Winkelwagenicoon {% endcomment %}
+          <a href="{{ routes.search_url }}" class="header__icon header__icon--search" aria-label="{{ 'general.search' | t }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </a>
+          <a href="{{ routes.account_url }}" class="header__icon header__icon--account" aria-label="{{ 'customer.account.title' | t }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </a>
+          <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart" aria-label="{{ 'general.cart' | t }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-15.55-16H1l.96 1.99h1.62l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A.993.993 0 0 0 20.01 4H5.21l-.94-2H1V0h3.45z"/></svg>
+            <span class="cart-count-bubble">{% if cart.item_count > 0 %}{{ cart.item_count }}{% endif %}</span>
         </a>
-      {% else %}
-        <h1><a href="{{ routes.root_url }}">{{ shop.name }}</a></h1>
-      {% endif %}
+        </div>
     </div>
-    <nav role="navigation">
-      <ul>
-        {% for link in linklists.main-menu.links %}
-          <li><a href="{{ link.url }}">{{ link.title }}</a></li>
-        {% endfor %}
-      </ul>
-    </nav>
   </header>
 
   <main role="main">
     {{ content_for_layout }} {# Shopify Plichtmatig #}
   </main>
 
-  <footer role="contentinfo">
-    <small>&copy; {{ 'now' | date: "%Y" }} {{ shop.name }}. {{ powered_by_link }}</small>
+  <footer role="contentinfo" class="site-footer">
+    <div class="page-width">
+      <div class="footer-content">
+        {% if settings.footer_linklist_1 != blank %}
+          <div class="footer-column footer-column--links">
+            <h4>{{ linklists[settings.footer_linklist_1].title | default: 'Info' }}</h4>
+            <ul>
+              {% for link in linklists[settings.footer_linklist_1].links %}
+                <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if settings.footer_linklist_2 != blank %}
+          <div class="footer-column footer-column--links">
+            <h4>{{ linklists[settings.footer_linklist_2].title | default: 'Customer Service' }}</h4>
+            <ul>
+              {% for link in linklists[settings.footer_linklist_2].links %}
+                <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% if settings.footer_show_social %}
+          <div class="footer-column footer-column--social">
+            <h4>{{ 'layout.footer.follow_us' | t | default: 'Follow Us' }}</h4>
+            {% include 'social-media-links' %}
+          </div>
+        {% endif %}
+
+        {% if settings.footer_show_newsletter %}
+          <div class="footer-column footer-column--newsletter">
+            <h4>{{ 'layout.footer.newsletter_title' | t | default: 'Newsletter' }}</h4>
+            <p>{{ 'layout.footer.newsletter_caption' | t | default: 'Sign up for exclusive offers and updates.' }}</p>
+            {% form 'customer', class: 'footer-newsletter-form' %}
+              <input type="hidden" name="contact[tags]" value="newsletter">
+              <div class="input-group">
+                <input type="email"
+                  name="contact[email]"
+                  id="FooterEmail"
+                  class="input-group-field"
+                  value="{% if customer %}{{ customer.email }}{% endif %}"
+                  placeholder="{{ 'layout.footer.email_placeholder' | t | default: 'Email address' }}"
+                  aria-label="{{ 'layout.footer.email_placeholder' | t | default: 'Email address' }}"
+                  aria-required="true"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  {% if form.errors %}
+                    aria-invalid="true"
+                    aria-describedby="FooterNewsletter-error"
+                    data-form-status
+                  {% endif %}>
+                <span class="input-group-btn">
+                  <button type="submit" class="btn" name="commit" id="FooterSubscribe">
+                    <span>{{ 'layout.footer.subscribe' | t | default: 'Subscribe' }}</span>
+                  </button>
+                </span>
+              </div>
+              {% if form.posted_successfully? %}
+                <p class="form-success">{{ 'layout.footer.newsletter_success' | t | default: 'Thanks for subscribing!' }}</p>
+              {% endif %}
+              {% if form.errors %}
+                <span id="FooterNewsletter-error" class="form-error">{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}.</span>
+              {% endif %}
+            {% endform %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-bottom__copyright">
+          {% if settings.footer_custom_text != blank %}
+            {{ settings.footer_custom_text }}
+          {% else %}
+            <small>&copy; {{ 'now' | date: "%Y" }} {{ shop.name }}. {{ 'shopify.powered_by_shopify' | t }}</small>
+          {% endif %}
+        </div>
+        {% if settings.footer_show_payment_icons and shop.enabled_payment_types.size > 0 %}
+          <div class="footer-bottom__payment-icons">
+            <span class="visually-hidden">{{ 'layout.footer.payment_methods' | t | default: 'Payment methods' }}</span>
+            <ul class="payment-icons">
+              {% for type in shop.enabled_payment_types %}
+                <li>{{ type | payment_type_svg_tag: class: 'payment-icon' }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+      </div>
+    </div>
   </footer>
+</div> {# End #page-container #}
+
+  {% section 'newsletter-popup' %} {# Laad de pop-up sectie als snippet niet direct werkt, of include snippet #}
+  {% include 'newsletter-popup' %}
+
 
   {{ 'theme.js' | asset_url | script_tag }} {# Voor toekomstige JS #}
 </body>

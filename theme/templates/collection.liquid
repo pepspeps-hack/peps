@@ -8,170 +8,128 @@
     {% endif %}
   </div>
 
-  {% paginate collection.products by 12 %}
+  {%- liquid
+    assign products_per_page = section.settings.products_per_page | default: 12
+    assign products_per_row_desktop = section.settings.products_per_row_desktop | default: 4
+    assign products_per_row_mobile = section.settings.products_per_row_mobile | default: 2
+
+    assign grid_item_class = 'medium-up--one-' | append: products_per_row_desktop | replace: '4', 'quarter' | replace: '3', 'third' | replace: '2', 'half'
+    if products_per_row_desktop == 5
+        assign grid_item_class = 'medium-up--one-fifth'
+    endif
+    assign grid_item_class_mobile = 'small--one-' | append: products_per_row_mobile | replace: '2', 'half' | replace: '1', 'whole'
+  -%}
+
+  <div class="collection-header section-header text-center">
+    <h1>{{ collection.title }}</h1>
+    {% if collection.description != blank %}
+      <div class="collection-description rte">
+        {{ collection.description }}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="collection-toolbar">
+    <div class="collection-toolbar__item collection-toolbar__item--filters">
+      {% comment %} Filter knop voor mobiel/sidebar {% endcomment %}
+      <button type="button" class="btn btn--secondary btn--small collection-filter-toggle" aria-expanded="false" aria-controls="CollectionFilters">
+        {{ 'collections.filters.title' | t }}
+      </button>
+    </div>
+    <div class="collection-toolbar__item collection-toolbar__item--sort">
+      {%- render 'collection-sort-form' -%}
+    </div>
+    <div class="collection-toolbar__item collection-toolbar__item--count">
+       {{ 'collections.general.items_with_count' | t: count: collection.products_count }}
+    </div>
+  </div>
+
+  {% comment %} TODO: Filter sidebar implementatie {% endcomment %}
+  <aside id="CollectionFilters" class="collection-filters" style="display:none;">
+    <p>Filters komen hier...</p>
+  </aside>
+
+
+  {% paginate collection.products by products_per_page %}
     {% if collection.products.size > 0 %}
-      <div class="grid grid--uniform grid--view-items">
+      <div class="product-grid grid grid--uniform">
         {% for product in collection.products %}
-          <div class="grid__item medium-up--one-third large-up--one-quarter">
-            {% include 'product-card', product: product %}
+          <div class="grid__item {{ grid_item_class_mobile }} {{ grid_item_class }}">
+            {% include 'product-card', product: product, class: 'collection-product-card' %}
           </div>
         {% endfor %}
       </div>
 
       {% if paginate.pages > 1 %}
-        <div class="pagination">
-          {{ paginate | default_pagination | replace: '&laquo; Previous', '&larr;' | replace: 'Next &raquo;', '&rarr;' }}
-        </div>
+        {%- render 'pagination', paginate: paginate -%}
       {% endif %}
     {% else %}
-      <p>{{ 'collections.general.no_matches' | t }}</p>
+      <p class="text-center">{{ 'collections.general.no_matches' | t }}</p>
     {% endif %}
   {% endpaginate %}
 </div>
 
-{% comment %} Stijlen specifiek voor de collectiepagina {% endcomment %}
-<style>
-.grid--view-items {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: -15px; /* Compenseer voor padding op grid__item */
-  margin-right: -15px; /* Compenseer voor padding op grid__item */
-}
-
-.grid__item {
-  padding-left: 15px;
-  padding-right: 15px;
-  margin-bottom: 30px; /* Ruimte tussen productrijen */
-  box-sizing: border-box;
-}
-
-/* Responsive aanpassingen voor kolommen */
-/* Standaard (mobiel eerst): 1 kolom */
-.grid__item.medium-up--one-third {
-  width: 100%;
-}
-.grid__item.large-up--one-quarter {
-   width: 100%;
-}
-
-/* Medium schermen en groter: 3 kolommen */
-@media screen and (min-width: 750px) { /* Shopify's medium-up breakpoint */
-  .grid__item.medium-up--one-third {
-    width: 33.3333%;
-  }
-  .grid__item.large-up--one-quarter {
-    width: 33.3333%; /* Behoud 3 kolommen als large-up niet specifieker is */
-  }
-}
-
-/* Grote schermen en groter: 4 kolommen */
-@media screen and (min-width: 990px) { /* Shopify's large-up breakpoint */
-  .grid__item.large-up--one-quarter {
-    width: 25%;
-  }
-}
-
-
-.product-card {
-  text-align: center;
-  border: 1px solid #eee;
-  padding: 15px;
-  background-color: #fff;
-  height: 100%; /* Zorgt dat kaarten even hoog zijn in een rij */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.product-card__image-wrapper {
-  display: block;
-  margin-bottom: 10px;
-  position: relative; /* Voor eventuele badges of hover effecten */
-}
-
-.product-card__image-wrapper img {
-  max-width: 100%;
-  height: auto;
-  max-height: 250px; /* Voorkom te grote afbeeldingen */
-  object-fit: contain; /* Zorg dat de afbeelding past zonder vervorming */
-}
-
-.product-card__title {
-  font-size: 1.1em;
-  margin: 0 0 5px 0;
-  font-weight: normal;
-  color: #333;
-  text-decoration: none; /* Als de titel een link is */
-}
-
-.product-card__price {
-  font-size: 1em;
-  color: #d9534f; /* Accentkleur, consistent met productpagina */
-  margin-bottom: 10px;
-}
-
-.product-card__price .old-price {
-    text-decoration: line-through;
-    color: #777;
-    font-size: 0.9em;
-    margin-left: 5px;
-}
-
-.product-card__view-button {
-  /* Gebruik .button-primary stijl of definieer hier */
-  background-color: #555;
-  color: #fff;
-  padding: 8px 15px;
-  text-decoration: none;
-  border-radius: 3px;
-  transition: background-color 0.3s ease;
-  font-size: 0.9em;
-  display: inline-block; /* Zodat padding werkt */
-}
-
-.product-card__view-button:hover {
-  background-color: #000;
-}
-
-.pagination {
-  text-align: center;
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
-.pagination a, .pagination span {
-  padding: 8px 12px;
-  margin: 0 3px;
-  border: 1px solid #ddd;
-  text-decoration: none;
-  color: #333;
-  border-radius: 3px;
-}
-
-.pagination .current {
-  background-color: #333;
-  color: #fff;
-  border-color: #333;
-}
-
-.pagination a:hover {
-  background-color: #f0f0f0;
-  border-color: #ccc;
-}
-
-.rte { /* Rich Text Editor content */
-  margin-bottom: 20px;
-}
-.section-header {
-  margin-bottom: 30px;
-}
-.section-header h1 {
-  font-size: 2em;
-  margin-bottom: 10px;
-}
-</style>
+{% comment %} Stijlen specifiek voor de collectiepagina (verplaatst naar style.css) {% endcomment %}
 
 {% comment %}
   Het 'product-card' snippet wordt gebruikt om elk product in de grid weer te geven.
-  Dit moet aangemaakt worden in snippets/product-card.liquid
+  Het 'pagination' snippet wordt gebruikt voor paginering.
+  Het 'collection-sort-form' snippet voor sorteren.
 {% endcomment %}
+
+{% schema %}
+{
+  "name": "Collection Page",
+  "tag": "section",
+  "class": "collection-page-section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 24,
+      "step": 4,
+      "label": "Products per page",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "products_per_row_desktop",
+      "label": "Products per row (Desktop)",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4 (Recommended)" },
+        { "value": "5", "label": "5" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "products_per_row_mobile",
+      "label": "Products per row (Mobile)",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2 (Recommended)" }
+      ],
+      "default": "2"
+    },
+    {
+        "type": "header",
+        "content": "Filtering & Sorting"
+    },
+    {
+        "type": "checkbox",
+        "id": "enable_filtering",
+        "label": "Enable filtering",
+        "default": true,
+        "info": "Requires tags on products for filters to appear."
+    },
+    {
+        "type": "checkbox",
+        "id": "enable_sorting",
+        "label": "Enable sorting",
+        "default": true
+    }
+  ]
+}
+{% endschema %}

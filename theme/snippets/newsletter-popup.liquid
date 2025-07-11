@@ -1,0 +1,223 @@
+{% if settings.popup_enable %}
+<div id="newsletterPopup" class="newsletter-popup" style="display: none;" data-delay="{{ settings.popup_delay | default: 5 }}">
+  <div class="newsletter-popup__overlay"></div>
+  <div class="newsletter-popup__content">
+    <button type="button" class="newsletter-popup__close" aria-label="{{ 'accessibility.close' | t }}">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+      </svg>
+    </button>
+
+    {% if settings.popup_title != blank %}
+      <h3 class="newsletter-popup__title">{{ settings.popup_title | escape }}</h3>
+    {% endif %}
+
+    {% if settings.popup_text != blank %}
+      <div class="newsletter-popup__text rte">
+        {{ settings.popup_text }}
+      </div>
+    {% endif %}
+
+    {% if settings.popup_mailchimp_url != blank %}
+      <div class="newsletter-popup__form-external">
+        {% comment %} Vereenvoudigde Mailchimp embed - voor een robuustere oplossing is meer nodig {% endcomment %}
+        <form action="{{ settings.popup_mailchimp_url }}" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+            <div id="mc_embed_signup_scroll">
+                <div class="mc-field-group">
+                    <label for="mce-EMAIL" class="visually-hidden">Email Address</label>
+                    <input type="email" value="" name="EMAIL" class="required email newsletter-popup__input" id="mce-EMAIL" placeholder="{{ 'layout.footer.email_placeholder' | t | default: 'Email address' }}" aria-label="{{ 'layout.footer.email_placeholder' | t | default: 'Email address' }}">
+                </div>
+                <div id="mce-responses" class="clear">
+                    <div class="response" id="mce-error-response" style="display:none"></div>
+                    <div class="response" id="mce-success-response" style="display:none"></div>
+                </div>
+                {% comment %} real people should not fill this in and expect good things - do not remove this or risk form bot signups {% endcomment %}
+                <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_YOUR_MAILCHIMP_SPECIFIC_CODE" tabindex="-1" value=""></div>
+                <div class="clear"><input type="submit" value="{{ settings.popup_button_text | default: 'Subscribe' }}" name="subscribe" id="mc-embedded-subscribe" class="btn newsletter-popup__button"></div>
+            </div>
+        </form>
+        <p class="newsletter-popup__spam-notice"><small>We respect your privacy. Unsubscribe at any time.</small></p>
+      </div>
+    {% else %}
+      <div class="newsletter-popup__form-shopify">
+        {% form 'customer', class: 'popup-newsletter-form' %}
+          <input type="hidden" name="contact[tags]" value="newsletter,popup">
+          <div class="input-group">
+            <input type="email"
+              name="contact[email]"
+              id="PopupEmail"
+              class="input-group-field newsletter-popup__input"
+              value="{% if customer %}{{ customer.email }}{% endif %}"
+              placeholder="{{ 'layout.footer.email_placeholder' | t | default: 'Email address' }}"
+              aria-label="{{ 'layout.footer.email_placeholder' | t | default: 'Email address' }}"
+              aria-required="true"
+              autocorrect="off"
+              autocapitalize="off">
+            <span class="input-group-btn">
+              <button type="submit" class="btn newsletter-popup__button" name="commit" id="PopupSubscribe">
+                <span>{{ settings.popup_button_text | default: 'Subscribe' }}</span>
+              </button>
+            </span>
+          </div>
+          {% if form.posted_successfully? %}
+            <p class="form-success">{{ 'layout.footer.newsletter_success' | t | default: 'Thanks for subscribing!' }}</p>
+          {% endif %}
+          {% if form.errors %}
+            <span class="form-error">{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}.</span>
+          {% endif %}
+        {% endform %}
+      </div>
+    {% endif %}
+     <div class="newsletter-popup__extra-links">
+        <button type="button" class="newsletter-popup__no-thanks">
+            {{ 'sections.newsletter_popup.no_thanks' | t | default: "No, thanks" }}
+        </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.newsletter-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000; /* Hoogste z-index */
+  display: flex; /* Gebruik flex voor centreren */
+  align-items: center;
+  justify-content: center;
+}
+.newsletter-popup__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6); /* Donkere overlay */
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.newsletter-popup__content {
+  position: relative;
+  background-color: var(--color-secondary, #fff);
+  color: var(--color-text);
+  padding: 30px 40px;
+  border-radius: 5px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  max-width: 500px; /* Max breedte van de pop-up */
+  width: 90%; /* Responsieve breedte */
+  text-align: center;
+  animation: popupFadeInScale 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+@keyframes popupFadeInScale {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.newsletter-popup__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 5px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+.newsletter-popup__close:hover {
+  opacity: 1;
+}
+.newsletter-popup__close svg {
+    display:block; /* Voorkom extra ruimte onder svg */
+}
+
+.newsletter-popup__title {
+  font-size: 1.8em;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+}
+.newsletter-popup__text {
+  font-size: 1em;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+.newsletter-popup__text .rte p:last-child {
+    margin-bottom:0;
+}
+
+.newsletter-popup__input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 3px;
+  margin-bottom: 15px; /* Ruimte voor de knop als deze eronder staat */
+  font-size: 1em;
+}
+.newsletter-popup__button {
+  width: 100%;
+  padding: 12px 20px;
+  /* Gebruikt .btn stijlen */
+}
+
+/* Voor Shopify formulier met input group */
+.newsletter-popup__form-shopify .input-group {
+    display: flex;
+    margin-bottom: 10px; /* Ruimte voor succes/error bericht */
+}
+.newsletter-popup__form-shopify .input-group-field {
+    flex-grow: 1;
+    border-right: none;
+    border-radius: 3px 0 0 3px;
+    margin-bottom: 0; /* Reset margin van algemene input */
+}
+.newsletter-popup__form-shopify .input-group-btn .btn {
+    border-radius: 0 3px 3px 0;
+    height: 100%; /* Zorg dat knop even hoog is als input */
+    white-space: nowrap;
+}
+.newsletter-popup__form-shopify .form-success,
+.newsletter-popup__form-shopify .form-error {
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+.newsletter-popup__form-shopify .form-success { color: green; }
+.newsletter-popup__form-shopify .form-error { color: red; }
+
+
+/* Voor externe Mailchimp form (basis) */
+.newsletter-popup__form-external .mc-field-group {
+    margin-bottom: 10px;
+}
+.newsletter-popup__form-external #mc-embedded-subscribe {
+    /* Gebruikt .btn stijlen */
+    width: 100%;
+}
+.newsletter-popup__spam-notice {
+    font-size: 0.8em;
+    opacity: 0.7;
+    margin-top: 15px;
+}
+.newsletter-popup__extra-links {
+    margin-top: 20px;
+}
+.newsletter-popup__no-thanks {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    text-decoration: underline;
+    font-size: 0.9em;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+.newsletter-popup__no-thanks:hover {
+    opacity: 1;
+}
+
+</style>
+{% endif %}

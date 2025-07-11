@@ -60,13 +60,13 @@
         "type": "font_picker",
         "id": "font_heading",
         "label": "Lettertype voor Koppen",
-        "default": "helvetica_n4" // n4 = normal 400 weight
+        "default": "playfair_display_n7" // Playfair Display, 700 weight
       },
       {
         "type": "font_picker",
         "id": "font_body",
         "label": "Lettertype voor Body Tekst",
-        "default": "helvetica_n4"
+        "default": "montserrat_n4" // Montserrat, 400 weight
       }
     ]
   },
@@ -91,6 +91,24 @@
         "unit": "px",
         "label": "Maximale Logo Breedte",
         "default": 250
+      },
+      {
+        "type": "select",
+        "id": "header_layout",
+        "label": "Header Indeling",
+        "options": [
+          { "value": "logo_left_nav_right", "label": "Logo links, Navigatie rechts" },
+          { "value": "logo_center_nav_below", "label": "Logo gecentreerd, Navigatie eronder" },
+          { "value": "logo_center_nav_inline", "label": "Logo gecentreerd, Navigatie inline (indien ruimte)" }
+        ],
+        "default": "logo_left_nav_right"
+      },
+      {
+        "type": "checkbox",
+        "id": "sticky_header_enable",
+        "label": "Sticky Header Activeren",
+        "default": true,
+        "info": "Maakt de header vast aan de bovenkant van het scherm tijdens het scrollen."
       }
     ]
   },
@@ -170,6 +188,44 @@
         "type": "text",
         "id": "social_pinterest_link",
         "label": "Pinterest Link"
+      },
+      {
+        "type": "header",
+        "content": "Footer Content"
+      },
+      {
+        "type": "link_list",
+        "id": "footer_linklist_1",
+        "label": "Linklijst Kolom 1"
+      },
+      {
+        "type": "link_list",
+        "id": "footer_linklist_2",
+        "label": "Linklijst Kolom 2"
+      },
+      {
+        "type": "checkbox",
+        "id": "footer_show_newsletter",
+        "label": "Toon Nieuwsbrief Inschrijving in Footer",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "footer_show_social",
+        "label": "Toon Social Media Iconen in Footer",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "footer_show_payment_icons",
+        "label": "Toon Betaalmethoden Iconen",
+        "default": true
+      },
+      {
+        "type": "richtext",
+        "id": "footer_custom_text",
+        "label": "Aangepaste Tekst / Copyright",
+        "info": "Laat leeg voor standaard copyright."
       }
     ]
   }

@@ -1,0 +1,68 @@
+{% comment %}
+  Paginering snippet
+  Accepteert:
+  - paginate: het paginate object van Shopify
+{% endcomment %}
+{% if paginate.parts.size > 0 %}
+  <nav class="pagination" role="navigation" aria-label="Pagination">
+    <ul class="pagination__list">
+      {% if paginate.previous %}
+        <li class="pagination__item pagination__item--prev">
+          <a href="{{ paginate.previous.url }}" class="pagination__link" aria-label="{{ 'general.pagination.previous' | t }}">
+            <svg aria-hidden="true" focusable="false" class="icon icon-arrow-left" viewBox="0 0 10 6">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.707.293a1 1 0 0 0-1.414 0L5 3.586 1.707.293A1 1 0 0 0 .293 1.707l4 4a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0 0-1.414z" fill="currentColor"/>
+            </svg>
+            <span>{{ 'general.pagination.previous' | t }}</span>
+          </a>
+        </li>
+      {% else %}
+        <li class="pagination__item pagination__item--prev pagination__item--disabled">
+          <span class="pagination__link">
+             <svg aria-hidden="true" focusable="false" class="icon icon-arrow-left" viewBox="0 0 10 6">
+               <path fill-rule="evenodd" clip-rule="evenodd" d="M9.707.293a1 1 0 0 0-1.414 0L5 3.586 1.707.293A1 1 0 0 0 .293 1.707l4 4a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0 0-1.414z" fill="currentColor"/>
+            </svg>
+            <span>{{ 'general.pagination.previous' | t }}</span>
+          </span>
+        </li>
+      {% endif %}
+
+      {% for part in paginate.parts %}
+        {% if part.is_link %}
+          <li class="pagination__item">
+            <a href="{{ part.url }}" class="pagination__link" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{ part.title }}</a>
+          </li>
+        {% else %}
+          {% if part.title == paginate.current_page %}
+            <li class="pagination__item pagination__item--current">
+              <span class="pagination__link" aria-current="page" aria-label="{{ 'general.pagination.page' | t: number: part.title }}">{{ part.title }}</span>
+            </li>
+          {% else %}
+            <li class="pagination__item pagination__item--disabled">
+              <span class="pagination__link">&hellip;</span>
+            </li>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if paginate.next %}
+        <li class="pagination__item pagination__item--next">
+          <a href="{{ paginate.next.url }}" class="pagination__link" aria-label="{{ 'general.pagination.next' | t }}">
+            <span>{{ 'general.pagination.next' | t }}</span>
+            <svg aria-hidden="true" focusable="false" class="icon icon-arrow-right" viewBox="0 0 10 6">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.707.293a1 1 0 0 0-1.414 0L5 3.586 1.707.293A1 1 0 0 0 .293 1.707l4 4a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0 0-1.414z" fill="currentColor"/>
+            </svg>
+          </a>
+        </li>
+      {% else %}
+         <li class="pagination__item pagination__item--next pagination__item--disabled">
+          <span class="pagination__link">
+            <span>{{ 'general.pagination.next' | t }}</span>
+            <svg aria-hidden="true" focusable="false" class="icon icon-arrow-right" viewBox="0 0 10 6">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9.707.293a1 1 0 0 0-1.414 0L5 3.586 1.707.293A1 1 0 0 0 .293 1.707l4 4a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0 0-1.414z" fill="currentColor"/>
+            </svg>
+          </span>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}

@@ -1,90 +1,1014 @@
-/* Basisstijlen - Worden later uitgebreid en gebruiken nu CSS variabelen uit theme.liquid */
-body {
-  /* font-family, background-color, color worden nu via :root en CSS variabelen in theme.liquid ingesteld */
-  margin: 0;
-  padding: 0;
+/* Algemene Stijlen & Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-header {
-  background-color: var(--color-secondary); /* Gebruik een van de gedefinieerde kleuren */
-  padding: 20px;
-  border-bottom: 1px solid #eee; /* Kan ook een CSS variabele worden */
-  text-align: center;
+body {
+  margin: 0;
+  padding: 0;
+  font-feature-settings: "kern"; /* Betere kerning */
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden; /* Voorkom horizontale scrollbars */
 }
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle; /* Voorkom ruimte onder afbeeldingen */
+}
+
+a {
+  color: var(--color-text);
+  text-decoration: none; /* Standaard geen onderstreping, voeg toe waar nodig */
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+a:hover {
+  color: var(--color-primary); /* Of een andere hover kleur */
+  opacity: 0.8;
+}
+
+/* Paginabreedte container */
+.page-width {
+  max-width: 1320px; /* Ruimere maximale breedte voor luxe gevoel */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 30px; /* Meer padding aan de zijkanten */
+  padding-right: 30px;
+}
+@media screen and (max-width: 768px) {
+  .page-width {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/* Sticky Footer Setup */
+#page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+main {
+  flex-grow: 1;
+  padding-top: 30px; /* Ruimte boven main content */
+  padding-bottom: 30px; /* Ruimte onder main content */
+}
+
+/* Header Stijlen */
+.site-header {
+  background-color: var(--color-secondary, #fff);
+  padding: 15px 0; /* Iets minder padding voor een strakkere look */
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 1000; /* Hogere z-index voor sticky header en dropdowns */
+  transition: padding 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease; /* Voor sticky state */
+}
+.site-header.is-sticky { /* Stijlen voor wanneer de header sticky is */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 0; /* Kleinere padding als sticky */
+  background-color: rgba(var(--color-secondary-rgb, 255,255,255), 0.97); /* Licht doorzichtig */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+  backdrop-filter: blur(5px); /* Glassmorphism effect indien ondersteund */
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.header__content { /* Nieuwe wrapper binnen .page-width voor flex controle */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Layout specifieke stijlen */
+.header-layout--logo_left_nav_right .header__content {
+  /* Standaard: logo links, nav rechts, icons uiterst rechts */
+}
+.header-layout--logo_center_nav_below .header__content {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.header-layout--logo_center_nav_below .header__logo-area {
+  order: 1;
+}
+.header-layout--logo_center_nav_below .header__navigation {
+  order: 2;
+  width: 100%; /* Navigatie volledige breedte */
+  justify-content: center; /* Centreer navigatie items */
+}
+.header-layout--logo_center_nav_below .header__icons {
+  order: 0; /* Icons kunnen bovenaan blijven of verplaatst worden */
+  position: absolute; /* Voorbeeld: rechtsboven */
+  top: 50%;
+  right: var(--page-padding, 30px); /* Gebruik CSS var voor padding */
+  transform: translateY(-50%);
+}
+@media (max-width: 768px) { /* Op mobiel forceren we vaak een andere layout */
+  .header-layout--logo_center_nav_below .header__icons {
+     position: static; /* Reset positie */
+     transform: none;
+     order: 3; /* Icons onderaan op mobiel */
+     margin-top:10px;
+  }
+}
+
+
+.header-layout--logo_center_nav_inline .header__content {
+  /* Navigatie links en rechts van logo, icons uiterst rechts */
+  /* Dit vereist mogelijk meer complexe flexbox of grid, of JS voor item verdeling */
+  /* Voor nu, behandelen we het als logo links, nav rechts voor eenvoud */
+}
+
+
 .header__logo-area {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0; /* Voorkom dat logo krimpt */
+}
+.header__logo-image { /* Klasse voor <img> tag */
+  display: block;
+  max-height: 45px; /* Iets kleiner voor sticky */
+  transition: max-height 0.3s ease;
+}
+.is-sticky .header__logo-image {
+  max-height: 35px; /* Nog kleiner als sticky */
+}
+.header__shop-name a { /* Klasse voor H1 shop naam */
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 1.6em; /* Behoud grootte, of pas aan */
+  font-weight: var(--font-heading-weight);
+}
+
+/* Navigatie Stijlen (Site Nav) */
+.site-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Iets minder gap */
+}
+.site-nav__item {
+  position: relative; /* Voor dropdown */
+}
+.site-nav__link {
+  text-decoration: none;
+  color: var(--color-text);
+  font-size: 0.9em; /* Verfijnde grootte */
+  letter-spacing: 0.04em;
+  padding: 15px 5px; /* Meer verticale padding, minder horizontaal */
+  position: relative;
+  transition: color 0.3s ease;
+}
+.site-nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: 10px; /* Hoger voor een subtielere lijn */
+  left: 5px;
+  right: 5px;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease, left 0.3s ease, right 0.3s ease;
+}
+.site-nav__link:hover::after,
+.site-nav__item--active .site-nav__link::after {
+  width: calc(100% - 10px); /* Lijn niet volledige breedte */
+  left: 5px;
+}
+.site-nav__link:hover {
+    color: var(--color-primary);
+}
+
+/* Dropdown Menu Stijlen */
+.site-nav__dropdown {
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  position: absolute;
+  top: 100%;
+  left: -15px; /* Iets naar links voor uitlijning */
+  background-color: var(--color-secondary, #fff);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-top: none; /* Geen dubbele rand met header */
+  box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+  min-width: 200px;
+  z-index: 1010; /* Boven andere header elementen */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+  border-radius: 0 0 3px 3px;
+}
+.site-nav__item:hover > .site-nav__dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.site-nav__dropdown-item a {
+  display: block;
+  padding: 8px 20px;
+  font-size: 0.85em;
+  color: var(--color-text);
+  white-space: nowrap; /* Voorkom dat tekst breekt */
+}
+.site-nav__dropdown-item a:hover,
+.site-nav__dropdown-item--active a {
+  background-color: rgba(0,0,0,0.03);
+  color: var(--color-primary);
+}
+
+/* Header Icons */
+.header__icons {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Ruimte tussen icons */
+}
+.header__icon {
+  color: var(--color-text);
+  position: relative; /* Voor cart bubble */
+}
+.header__icon svg {
+  width: 22px; /* Iets kleiner en verfijnder */
+  height: 22px;
+  display: block;
+  transition: color 0.3s ease;
+}
+.header__icon:hover svg {
+  color: var(--color-primary); /* SVG kleur bij hover */
+}
+.cart-count-bubble {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: var(--color-accent);
+  color: var(--color-secondary, #fff); /* Zorg voor contrast */
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 5px;
+  min-width: 16px; /* Zodat het een cirkel blijft bij 1 cijfer */
+  text-align: center;
+  font-weight: bold;
+}
+
+
+/* Footer Stijlen */
+.site-footer {
+  background-color: var(--color-body-bg); /* Kan ook --color-secondary of een donkere tint zijn */
+  color: var(--color-text); /* Pas aan als achtergrond donker is */
+  padding: 50px 0 30px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.9em;
+}
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive kolommen */
+  gap: 30px;
+  margin-bottom: 40px;
+}
+.footer-column h4 {
+  font-size: 1.1em;
+  margin-bottom: 15px;
+  font-weight: var(--font-heading-weight); /* Consistent met headings */
+  letter-spacing: 0.02em;
+}
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.footer-column ul li {
+  margin-bottom: 8px;
+}
+.footer-column ul li a {
+  color: inherit; /* Erf kleur van .site-footer */
+  text-decoration: none;
+}
+.footer-column ul li a:hover {
+  color: var(--color-primary);
+  text-decoration: underline; /* Subtiele onderstreping bij hover */
+}
+.footer-column--newsletter .input-group {
+  display: flex;
+  margin-top: 10px;
+}
+.footer-column--newsletter .input-group-field {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-right: none;
+  border-radius: 3px 0 0 3px;
+  font-size: 0.95em;
+}
+.footer-column--newsletter .input-group-btn .btn {
+  padding: 10px 15px;
+  background-color: var(--color-primary);
+  color: var(--color-secondary, #fff);
+  border: 1px solid var(--color-primary);
+  border-radius: 0 3px 3px 0;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.footer-column--newsletter .input-group-btn .btn:hover {
+  background-color: darken(var(--color-primary), 10%); /* Maak iets donkerder bij hover */
+  border-color: darken(var(--color-primary), 10%);
+}
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.85em;
+  color: rgba(var(--color-text-rgb, 0,0,0), 0.7); /* Iets lichtere tekst voor copyright */
+  flex-wrap: wrap; /* Sta toe dat items wrappen op kleinere schermen */
+  gap: 15px; /* Ruimte tussen copyright en betaaliconen */
+}
+.footer-bottom__copyright {
+  flex-basis: 100%; /* Standaard volledige breedte */
+  text-align: center; /* Centreer op mobiel */
+  margin-bottom: 10px; /* Ruimte onder copyright op mobiel */
+}
+.footer-bottom__payment-icons {
+  flex-basis: 100%; /* Standaard volledige breedte */
+  display: flex;
+  justify-content: center; /* Centreer op mobiel */
+}
+
+@media screen and (min-width: 769px) { /* Grotere schermen */
+  .footer-bottom {
+    justify-content: space-between; /* Spreid op grotere schermen */
+  }
+  .footer-bottom__copyright {
+    flex-basis: auto; /* Reset basis */
+    text-align: left; /* Links uitlijnen */
+    margin-bottom: 0; /* Geen extra marge */
+  }
+  .footer-bottom__payment-icons {
+    flex-basis: auto; /* Reset basis */
+    justify-content: flex-end; /* Rechts uitlijnen */
+  }
+}
+
+.payment-icons {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 8px;
+}
+.payment-icon {
+  height: 24px; /* Pas aan voor gewenste grootte */
+  opacity: 0.8;
+}
+
+
+/* Knoppen */
+.btn, .button-primary { /* Algemene knopstijl, .button-primary voor specifieke primaire acties */
+  display: inline-block;
+  padding: 12px 25px;
+  font-family: var(--font-body-family); /* Kan ook --font-heading-family zijn voor een ander gevoel */
+  font-weight: var(--font-body-weight, 500); /* Medium gewicht */
+  font-size: 0.95em;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 3px; /* Subtiele afronding */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent; /* Basis voor rand */
+}
+.button-primary, .btn.btn--primary { /* Specifiek voor primaire knoppen */
+  background-color: var(--color-primary);
+  color: var(--color-secondary, #fff); /* Tekstkleur contrastrijk met primaire kleur */
+  border-color: var(--color-primary);
+}
+.button-primary:hover, .btn.btn--primary:hover {
+  background-color: lighten(var(--color-primary), 5%); /* Iets lichter bij hover */
+  border-color: lighten(var(--color-primary), 5%);
+  transform: translateY(-1px); /* Subtiele lift */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtiele schaduw */
+}
+
+.btn--secondary {
+  background-color: var(--color-secondary, #fff);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+.btn--secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-secondary, #fff);
+  border-color: var(--color-primary);
+}
+
+/* Formulieren (basis) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 3px;
+  font-family: var(--font-body-family);
+  font-size: 0.95em;
+  width: 100%; /* Standaard volledige breedte */
+  transition: border-color 0.3s ease;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.2); /* Focus ring */
+}
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Hulpklassen */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.visually-hidden { /* Voor toegankelijkheid */
+  position: absolute !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  word-wrap: normal !important;
+}
+
+/* RTE content styling */
+.rte {
+  line-height: var(--font-body-lh);
+}
+.rte p, .rte ul, .rte ol {
+  margin-bottom: 1.5em;
+}
+.rte ul, .rte ol {
+  padding-left: 1.5em;
+}
+.rte strong {
+  font-weight: var(--font-body-weight, 700); /* Bold */
+}
+.rte a {
+  text-decoration: underline; /* Onderstreep links in RTE content */
+  color: var(--color-primary);
+}
+.rte a:hover {
+  text-decoration: none;
+}
+
+/* Voeg hier meer gedetailleerde styling toe voor componenten */
+
+/* Animaties en Micro-interacties */
+/* --- Algemene hover effecten --- */
+.btn:hover, .button-primary:hover, .btn.btn--primary:hover, .btn--secondary:hover {
+  transform: translateY(-2px); /* Iets meer lift voor duidelijker effect */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08); /* Iets sterkere schaduw */
+}
+
+/* Product Card Hover Effect */
+.product-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.07);
+}
+.product-card__image-wrapper img {
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); /* Soepele zoom */
+}
+.product-card:hover .product-card__image-wrapper img {
+  transform: scale(1.05); /* Subtiele zoom op afbeelding */
+}
+
+/* Navigatie link hover (reeds gedefinieerd met ::after element, kan hier verfijnd worden indien nodig) */
+.site-nav__link:hover {
+    /* Kleurverandering is al gedefinieerd */
+    /* Eventuele extra effecten hier */
+}
+
+
+/* --- Fade-in animatie voor secties bij scrollen --- */
+.section-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.section-fade-in.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* Basis Styling voor Shopify Product Reviews App Output */
+.shopify-product-reviews {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+#shopify-product-reviews .spr-container {
+  padding: 0; /* Reset app's eigen padding indien nodig */
+  border: none; /* Reset app's eigen border indien nodig */
+}
+
+#shopify-product-reviews .spr-header-title {
+  font-size: 1.6em; /* Pas aan naar wens */
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  margin-bottom: 20px;
+}
+
+#shopify-product-reviews .spr-summary {
+  margin-bottom: 20px;
+}
+#shopify-product-reviews .spr-summary-caption {
+  font-size: 0.95em;
+}
+#shopify-product-reviews .spr-summary-actions-newreview {
+  /* Stijl de 'Write a review' knop */
+  display: inline-block; /* Zodat het een knop lijkt */
+  padding: 10px 20px;
+  background-color: var(--color-primary);
+  color: var(--color-secondary, #fff);
+  border-radius: 3px;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+#shopify-product-reviews .spr-summary-actions-newreview:hover {
+  background-color: lighten(var(--color-primary), 5%);
+}
+
+
+#shopify-product-reviews .spr-review {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+#shopify-product-reviews .spr-review:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+#shopify-product-reviews .spr-review-header-title {
+  font-size: 1.1em;
+  font-weight: bold; /* Kan ook heading font weight zijn */
+  margin-bottom: 5px;
+}
+#shopify-product-reviews .spr-review-header-byline {
+  font-size: 0.85em;
+  color: rgba(var(--color-text-rgb), 0.7);
+  margin-bottom: 10px;
+}
+
+#shopify-product-reviews .spr-starrating {
+  color: var(--color-accent, #f0ad4e); /* Gebruik accentkleur voor sterren */
+  margin-bottom: 10px;
+}
+#shopify-product-reviews .spr-icon { /* Stijl voor individuele sterren indien nodig */
+  font-size: 1.2em; /* Pas grootte van sterren aan */
+}
+
+#shopify-product-reviews .spr-review-content-body {
+  font-size: 0.95em;
+  line-height: 1.7;
+}
+
+/* Review Formulier (basis styling) */
+#shopify-product-reviews .spr-form {
+  margin-top: 30px;
+}
+#shopify-product-reviews .spr-form-title {
+  font-size: 1.3em;
+  font-family: var(--font-heading-family);
+  margin-bottom: 15px;
+}
+#shopify-product-reviews .spr-form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+#shopify-product-reviews .spr-form-input,
+#shopify-product-reviews .spr-form-textarea {
+  /* Gebruik algemene formulierstijlen of definieer hier opnieuw */
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 3px;
+  margin-bottom: 15px;
+  font-family: var(--font-body-family);
+}
+#shopify-product-reviews .spr-form-actions .spr-button {
+  /* Stijl de submit knop van het review formulier */
+  padding: 12px 25px;
+  background-color: var(--color-primary);
+  color: var(--color-secondary, #fff);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 1em;
+}
+#shopify-product-reviews .spr-form-actions .spr-button:hover {
+  background-color: lighten(var(--color-primary), 5%);
+}
+
+/* Productpagina Specifieke Stijlen */
+.product-single {
+  /* .grid wordt al gebruikt, dus geen extra display:flex hier nodig */
+  gap: 30px; /* Ruimte tussen afbeeldingenkolom en detailskolom */
+}
+.product-single__photo-wrapper {
+  position: relative; /* Voor eventuele zoom iconen etc. */
+}
+.product-image-main {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 3px;
+  overflow: hidden; /* Voor als afbeelding groter is dan container */
+  margin-bottom: 15px;
+}
+.product-image-main img {
+  display: block;
+  width: 100%;
+  cursor: zoom-in; /* Hint voor zoom functionaliteit */
+}
+
+.product-single__thumbnails {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.product-single__thumbnail-item {
+  flex: 0 0 calc(20% - 8px); /* 5 thumbnails per rij (10px gap, dus 4*2=8px voor gaps) */
+  max-width: calc(20% - 8px);
+}
+.product-single__thumbnail-link {
+  display: block;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+.product-single__thumbnail-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.product-single__thumbnail-item.is-active .product-single__thumbnail-link,
+.product-single__thumbnail-link:hover {
+  border-color: var(--color-primary);
+}
+
+.product-single__details {
+  /* padding-left al door grid gap */
+}
+.product-single__title {
+  font-size: 2.2em; /* Groter voor producttitel */
+  margin-top: 0; /* Geen extra marge bovenaan in deze kolom */
+  margin-bottom: 10px;
+  font-family: var(--font-heading-family);
+}
+.product-single__subheading {
+    font-size: 0.85em;
+    color: rgba(var(--color-text-rgb),0.7);
+    margin-bottom: 15px;
+    display: flex;
+    gap: 15px;
+}
+.product__price--single {
+  font-size: 1.6em;
+  font-weight: bold;
+  margin-bottom: 20px;
+  display: flex; /* Om sale badge naast prijs te kunnen plaatsen */
+  align-items: center;
+  gap: 10px;
+}
+.product__price--compare {
+  font-size: 0.7em; /* Relatief t.o.v. .product__price--single */
+  text-decoration: line-through;
+  color: rgba(var(--color-text-rgb),0.6);
+}
+.product__price--sale-badge {
+    background-color: var(--color-accent);
+    color: var(--color-secondary, #fff);
+    font-size: 0.5em; /* Relatief t.o.v. .product__price--single */
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: normal;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.product-single__short-description {
+    font-size: 0.95em;
+    margin-bottom: 25px;
+    color: rgba(var(--color-text-rgb),0.85);
+}
+
+/* Product Formulier */
+.product-form {
+  margin-bottom: 30px;
+}
+.product-form__option {
+  margin-bottom: 20px;
+}
+.product-form__option-name {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.product-form__option-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.product-form__option-values input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.product-form__option-value-label {
+  display: inline-block;
+  padding: 8px 15px;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 20px; /* Pilvormig */
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--color-secondary, #fff);
+  color: var(--color-text);
+}
+.product-form__option-values input[type="radio"]:checked + .product-form__option-value-label {
+  background-color: var(--color-primary);
+  color: var(--color-secondary, #fff);
+  border-color: var(--color-primary);
+}
+.product-form__option-values input[type="radio"]:disabled + .product-form__option-value-label {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f0f0f0;
+  text-decoration: line-through;
+}
+.product-form__option-values input[type="radio"]:focus + .product-form__option-value-label {
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.3);
+}
+
+
+.product-form__item--quantity {
+  margin-bottom: 20px;
+}
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 3px;
+  width: fit-content; /* Alleen zo breed als nodig */
+}
+.quantity-selector__button {
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 1.2em;
+  line-height: 1;
+  color: var(--color-text);
+}
+.quantity-selector__button:hover {
+  color: var(--color-primary);
+}
+.quantity-selector__input {
+  width: 50px;
+  text-align: center;
+  border: none; /* Randen al op .quantity-selector */
+  padding: 8px 0;
+  font-size: 1em;
+  -moz-appearance: textfield; /* Verberg pijltjes in Firefox */
+}
+.quantity-selector__input::-webkit-outer-spin-button,
+.quantity-selector__input::-webkit-inner-spin-button {
+  -webkit-appearance: none; /* Verberg pijltjes in Chrome/Safari */
+  margin: 0;
+}
+
+.product-form__cart-submit {
+  width: 100%; /* Volledige breedte knop */
+  padding: 15px 25px; /* Grotere knop */
+  font-size: 1.05em;
+  position: relative; /* Voor spinner */
+}
+.product-form__cart-submit .product-form__spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.product-form__cart-submit .add-to-cart-text.is-hidden {
+    visibility: hidden;
+}
+
+
+/* Product Tabs */
+.product-tabs {
+  margin-top: 40px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  padding-top: 30px;
+}
+.product-tabs__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.product-tabs__link {
+  display: block;
+  padding: 10px 5px; /* Minder padding, focus op border */
+  color: rgba(var(--color-text-rgb),0.7);
+  text-decoration: none;
+  font-size: 1em;
+  font-weight: bold;
+  position: relative;
+  border-bottom: 3px solid transparent; /* Placeholder voor actieve border */
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.product-tabs__link.is-active,
+.product-tabs__link:hover {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+.product-tabs__panel {
+  display: none; /* Standaard verborgen */
+  padding-top: 20px;
+}
+.product-tabs__panel.is-active {
+  display: block;
+  animation: fadeInPanel 0.5s ease forwards;
+}
+@keyframes fadeInPanel {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Collectiepagina Specifieke Stijlen */
+.collection-header {
+  padding-bottom: 30px; /* Ruimte onder de titel/beschrijving */
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  margin-bottom: 30px;
+}
+.collection-header h1 {
+  margin-bottom: 10px;
+}
+.collection-description.rte {
+  max-width: 700px; /* Voor betere leesbaarheid */
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 0.95em;
+  color: rgba(var(--color-text-rgb),0.8);
+}
+
+.collection-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 15px;
+  flex-wrap: wrap; /* Voor kleinere schermen */
+}
+.collection-toolbar__item--filters .btn {
+  font-size: 0.9em;
+  padding: 8px 15px; /* Kleinere knop */
+}
+.collection-toolbar__item--sort .collection-sort-form__select {
+  padding: 8px 30px 8px 12px; /* Ruimte voor dropdown pijl */
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 3px;
+  font-family: var(--font-body-family);
+  font-size: 0.9em;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23333333' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.collection-toolbar__item--count {
+  font-size: 0.9em;
+  color: rgba(var(--color-text-rgb),0.7);
+}
+
+/* Product Grid op Collectiepagina */
+.product-grid {
+  /* .grid en .grid--uniform stijlen worden al toegepast */
+  /* Specifieke aanpassingen voor kolombreedtes (CSS variabelen of directe klassen) */
+}
+/* Voorbeeld voor 5 kolommen (als .medium-up--one-fifth niet standaard is) */
+@media screen and (min-width: 750px) { /* Medium-up breakpoint */
+  .grid__item.medium-up--one-fifth {
+    width: 20%;
+  }
+}
+/* Mobiele kolom klassen (small--one-half, small--one-whole) */
+@media screen and (max-width: 749px) { /* Tot medium-up breakpoint */
+  .grid__item.small--one-half {
+    width: 50%;
+  }
+  .grid__item.small--one-whole {
+    width: 100%;
+  }
+}
+
+
+/* Paginering Stijlen */
+.pagination {
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+.pagination__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 0;
+  gap: 8px;
 }
-.header__logo-area img {
-  display: block; /* Zorgt dat img correct behandeld wordt in flex container */
-}
-.header__logo-area h1 a {
+.pagination__link {
+  display: flex; /* Om icon en tekst goed uit te lijnen */
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 3px;
   color: var(--color-text);
   text-decoration: none;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+}
+.pagination__link:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(var(--color-primary-rgb), 0.05);
+  color: var(--color-primary);
+}
+.pagination__item--current .pagination__link {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-secondary, #fff);
+  cursor: default;
+}
+.pagination__item--disabled .pagination__link {
+  color: rgba(var(--color-text-rgb),0.4);
+  cursor: default;
+  border-color: rgba(0,0,0,0.1);
+}
+.pagination__item--disabled .pagination__link:hover {
+    background-color: transparent; /* Geen hover effect op disabled */
 }
 
-/* Pas de bestaande h1 stijl aan als die nog globaal is */
-h1 { /* Dit is een algemene h1, header h1 is specifieker indien nodig */
-  margin: 0; /* Verplaatst van header h1 naar algemene h1 of specifieke .header__logo-area h1 */
-  font-size: 2em; /* Blijft, maar font-family wordt door :root bepaald */
+.pagination__item--prev .pagination__link svg,
+.pagination__item--next .pagination__link svg {
+  width: 10px;
+  height: 10px;
+}
+.pagination__item--prev .pagination__link svg {
+  margin-right: 5px;
+  transform: rotate(90deg); /* Pijl naar links */
+}
+.pagination__item--next .pagination__link svg {
+  margin-left: 5px;
+  transform: rotate(-90deg); /* Pijl naar rechts */
 }
 
-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0 0;
-}
-
-nav ul li {
-  display: inline-block;
-  margin-right: 15px;
-}
-
-nav ul li a {
-  text-decoration: none;
-  color: #555;
-}
-
-nav ul li a:hover {
-  color: #000;
-}
-
-main {
-  padding: 20px;
-  min-height: 60vh; /* Zorgt ervoor dat de footer niet omhoog kruipt */
-}
-
-footer {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 20px;
-  margin-top: 30px;
-}
-
-footer a {
-  color: #fff;
-  text-decoration: underline;
-}
-
-/* Voorbeeld van stijlen voor een luxe uitstraling - placeholder */
-.luxe-text {
-  font-family: 'Times New Roman', Times, serif; /* Of een ander elegant lettertype */
-  color: #222;
-}
-
-.button-primary {
-  background-color: #000;
-  color: #fff;
-  padding: 10px 20px;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.button-primary:hover {
-  background-color: #444;
+/* Collection Filters (Placeholder) */
+.collection-filters {
+    padding: 20px;
+    background-color: var(--color-body-bg); /* Iets andere achtergrond */
+    border: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+    border-radius: 3px;
 }

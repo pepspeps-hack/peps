@@ -1,0 +1,30 @@
+{% comment %}
+  Collection Sort Form Snippet
+  Renders a dropdown to sort collection products.
+{% endcomment %}
+<form class="collection-sort-form">
+  <label for="SortBy" class="visually-hidden">{{ 'collections.sorting.title' | t }}</label>
+  <select name="sort_by" id="SortBy" class="collection-sort-form__select" aria-describedby="a11y-refresh-page-message">
+    {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+    {% for option in collection.sort_options %}
+      <option value="{{ option.value }}" {% if option.value == sort_by %}selected="selected"{% endif %}>
+        {{ option.name }}
+      </option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="visually-hidden">{{ 'collections.sorting.submit' | t }}</button>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const sortForm = document.querySelector('.collection-sort-form');
+    if (sortForm) {
+      const select = sortForm.querySelector('select');
+      select.addEventListener('change', function() {
+        // Submit the form to reload the page with new sort order
+        // Shopify's default behavior handles this by reloading the page with sort_by parameter
+        this.form.submit();
+      });
+    }
+  });
+</script>

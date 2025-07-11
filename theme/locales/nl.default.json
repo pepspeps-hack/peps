@@ -1,0 +1,162 @@
+{
+  "general": {
+    "homepage": {
+      "title": "Welkom bij Onze Winkel",
+      "content": "Ontdek onze nieuwste collecties en exclusieve aanbiedingen. Dit is de standaard startpagina-inhoud. Je kunt dit aanpassen via de Shopify Thema Editor of door het template (templates/index.liquid) te bewerken."
+    },
+    "search": "Zoeken",
+    "cart": "Winkelwagen",
+    "remove": "Verwijderen",
+    "sold_out": "Uitverkocht",
+    "unavailable": "Niet beschikbaar"
+  },
+  "shopify": {
+    "checkout": {
+      "title": "Afrekenen"
+    },
+    "powered_by_shopify": "Mogelijk gemaakt door Shopify"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Toevoegen aan winkelwagen",
+      "sold_out": "Uitverkocht",
+      "quantity": "Aantal",
+      "regular_price": "Normale prijs",
+      "sale_price": "Actieprijs",
+      "view_product": "Bekijk Product"
+    }
+  },
+  "collections": {
+    "general": {
+      "no_matches": "Sorry, er zijn geen producten in deze collectie.",
+      "view_all": "Bekijk alles"
+    }
+  },
+  "cart": {
+    "general": {
+      "title": "Jouw Winkelwagen",
+      "empty": "Je winkelwagen is momenteel leeg.",
+      "continue_browsing_html": "Ga <a href=\"{{ url }}\">hier</a> verder met winkelen.",
+      "subtotal": "Subtotaal",
+      "shipping_at_checkout": "Verzendkosten, belastingen en kortingscodes worden berekend bij het afrekenen.",
+      "note": "Voeg een opmerking toe aan je bestelling",
+      "update": "Winkelwagen bijwerken",
+      "checkout": "Afrekenen"
+    },
+    "label": {
+      "product": "Product",
+      "price": "Prijs",
+      "quantity": "Aantal",
+      "total": "Totaal"
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "Mijn Account",
+      "details": "Accountgegevens",
+      "view_addresses": "Adressen bekijken",
+      "logout": "Uitloggen"
+    },
+    "login": {
+      "title": "Inloggen",
+      "forgot_password": "Wachtwoord vergeten?",
+      "sign_in": "Inloggen",
+      "create_account": "Account aanmaken",
+      "guest_continue": "Doorgaan als gast"
+    },
+    "register": {
+      "title": "Account Aanmaken",
+      "submit": "Aanmaken"
+    },
+    "addresses": {
+      "title": "Jouw Adressen",
+      "add_new": "Nieuw Adres Toevoegen",
+      "edit_address": "Adres Bewerken",
+      "default": "Standaard"
+    }
+  },
+  "sections": {
+    "featured_products": {
+        "title": "Aanbevolen Producten",
+        "view_all": "Bekijk Alle Producten"
+    },
+    "hero_banner": {
+        "default_title": "Hero Banner Titel",
+        "default_text": "<p>Gebruik deze tekst om informatie over je merk te delen met je klanten. Beschrijf een product, deel aankondigingen, of verwelkom klanten in je winkel.</p>",
+        "default_button_label": "Shop nu"
+    }
+  },
+  "accessibility": {
+    "skip_to_content": "Direct naar inhoud",
+    "close": "Sluiten"
+  },
+  "layout": {
+    "footer": {
+      "follow_us": "Volg Ons",
+      "newsletter_title": "Nieuwsbrief",
+      "newsletter_caption": "Meld je aan voor exclusieve aanbiedingen en updates.",
+      "email_placeholder": "E-mailadres",
+      "subscribe": "Inschrijven",
+      "newsletter_success": "Bedankt voor je inschrijving!",
+      "payment_methods": "Betaalmethoden"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Toevoegen aan winkelwagen",
+      "sold_out": "Uitverkocht",
+      "quantity": "Aantal",
+      "regular_price": "Normale prijs",
+      "sale_price": "Actieprijs",
+      "view_product": "Bekijk Product",
+      "on_sale": "Sale",
+      "description": "Beschrijving",
+      "specifications": "Specificaties",
+      "reviews": "Recensies"
+    }
+  },
+  "collections": {
+    "general": {
+      "no_matches": "Sorry, er zijn geen producten in deze collectie.",
+      "view_all": "Bekijk alles",
+      "items_with_count": "{{ count }} artikelen"
+    },
+    "filters": {
+        "title": "Filteren op"
+    },
+    "sorting": {
+        "title": "Sorteren op",
+        "submit": "Sorteren"
+    }
+  },
+   "general": {
+    "homepage": {
+      "title": "Welkom bij Onze Winkel",
+      "content": "Ontdek onze nieuwste collecties en exclusieve aanbiedingen. Dit is de standaard startpagina-inhoud. Je kunt dit aanpassen via de Shopify Thema Editor of door het template (templates/index.liquid) te bewerken."
+    },
+    "search": "Zoeken",
+    "cart": "Winkelwagen",
+    "remove": "Verwijderen",
+    "sold_out": "Uitverkocht",
+    "unavailable": "Niet beschikbaar",
+    "pagination": {
+      "previous": "Vorige",
+      "next": "Volgende",
+      "page": "Pagina {{ number }}"
+    }
+  },
+  "sections": {
+    "featured_products": {
+        "title": "Aanbevolen Producten",
+        "view_all": "Bekijk Alle Producten"
+    },
+    "hero_banner": {
+        "default_title": "Hero Banner Titel",
+        "default_text": "<p>Gebruik deze tekst om informatie over je merk te delen met je klanten. Beschrijf een product, deel aankondigingen, of verwelkom klanten in je winkel.</p>",
+        "default_button_label": "Shop nu"
+    },
+    "newsletter_popup": {
+        "no_thanks": "Nee, bedankt"
+    }
+  }
+}

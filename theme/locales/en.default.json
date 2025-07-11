@@ -1,0 +1,162 @@
+{
+  "general": {
+    "homepage": {
+      "title": "Welcome to Our Store",
+      "content": "Discover our latest collections and exclusive offers. This is the default homepage content. You can customize this through the Shopify Theme Editor or by editing the template (templates/index.liquid)."
+    },
+    "search": "Search",
+    "cart": "Cart",
+    "remove": "Remove",
+    "sold_out": "Sold Out",
+    "unavailable": "Unavailable"
+  },
+  "shopify": {
+    "checkout": {
+      "title": "Checkout"
+    },
+    "powered_by_shopify": "Powered by Shopify"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "sold_out": "Sold Out",
+      "quantity": "Quantity",
+      "regular_price": "Regular price",
+      "sale_price": "Sale price",
+      "view_product": "View Product"
+    }
+  },
+  "collections": {
+    "general": {
+      "no_matches": "Sorry, there are no products in this collection.",
+      "view_all": "View all"
+    }
+  },
+  "cart": {
+    "general": {
+      "title": "Your Cart",
+      "empty": "Your cart is currently empty.",
+      "continue_browsing_html": "Continue browsing <a href=\"{{ url }}\">here</a>.",
+      "subtotal": "Subtotal",
+      "shipping_at_checkout": "Shipping, taxes, and discount codes calculated at checkout.",
+      "note": "Add a note to your order",
+      "update": "Update Cart",
+      "checkout": "Checkout"
+    },
+    "label": {
+      "product": "Product",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total": "Total"
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "My Account",
+      "details": "Account Details",
+      "view_addresses": "View Addresses",
+      "logout": "Log Out"
+    },
+    "login": {
+      "title": "Login",
+      "forgot_password": "Forgot your password?",
+      "sign_in": "Sign In",
+      "create_account": "Create Account",
+      "guest_continue": "Continue as Guest"
+    },
+    "register": {
+      "title": "Create Account",
+      "submit": "Create"
+    },
+    "addresses": {
+      "title": "Your Addresses",
+      "add_new": "Add a New Address",
+      "edit_address": "Edit Address",
+      "default": "Default"
+    }
+  },
+  "sections": {
+    "featured_products": {
+        "title": "Featured Products",
+        "view_all": "View All Products"
+    },
+    "hero_banner": {
+        "default_title": "Hero Banner Title",
+        "default_text": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>",
+        "default_button_label": "Shop now"
+    }
+  },
+  "accessibility": {
+    "skip_to_content": "Skip to content",
+    "close": "Close"
+  },
+  "layout": {
+    "footer": {
+      "follow_us": "Follow Us",
+      "newsletter_title": "Newsletter",
+      "newsletter_caption": "Sign up for exclusive offers and updates.",
+      "email_placeholder": "Email address",
+      "subscribe": "Subscribe",
+      "newsletter_success": "Thanks for subscribing!",
+      "payment_methods": "Payment methods"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to Cart",
+      "sold_out": "Sold Out",
+      "quantity": "Quantity",
+      "regular_price": "Regular price",
+      "sale_price": "Sale price",
+      "view_product": "View Product",
+      "on_sale": "Sale",
+      "description": "Description",
+      "specifications": "Specifications",
+      "reviews": "Reviews"
+    }
+  },
+  "collections": {
+    "general": {
+      "no_matches": "Sorry, there are no products in this collection.",
+      "view_all": "View all",
+      "items_with_count": "{{ count }} items"
+    },
+    "filters": {
+        "title": "Filter by"
+    },
+    "sorting": {
+        "title": "Sort by",
+        "submit": "Sort"
+    }
+  },
+  "general": {
+    "homepage": {
+      "title": "Welcome to Our Store",
+      "content": "Discover our latest collections and exclusive offers. This is the default homepage content. You can customize this through the Shopify Theme Editor or by editing the template (templates/index.liquid)."
+    },
+    "search": "Search",
+    "cart": "Cart",
+    "remove": "Remove",
+    "sold_out": "Sold Out",
+    "unavailable": "Unavailable",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{ number }}"
+    }
+  },
+  "sections": {
+    "featured_products": {
+        "title": "Featured Products",
+        "view_all": "View All Products"
+    },
+    "hero_banner": {
+        "default_title": "Hero Banner Title",
+        "default_text": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>",
+        "default_button_label": "Shop now"
+    },
+    "newsletter_popup": {
+        "no_thanks": "No, thanks"
+    }
+  }
+}
