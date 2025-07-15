@@ -1,0 +1,4 @@
+vinted-api-wrapper
+google-api-python-client
+pyyaml
+google-auth-oauthlib

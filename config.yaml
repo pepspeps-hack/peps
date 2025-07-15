@@ -1,0 +1,9 @@
+OR_API_KEY: ""                     # jouw OpenRouter-key
+search_term: "sneakers vintage"
+min_price: 15
+max_price: 25
+min_profit_pct: 30
+condition: "like_new"              # nieuwstaat
+sheet_id: "1AbCdEfGhIjKlMnOpQrSt"
+schedule_interval_minutes: 60
+proxy: ""
