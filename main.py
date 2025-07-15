@@ -2,7 +2,7 @@ import yaml
 import os
 import time
 import datetime
-from vinted import Vinted
+from pyVinted import Vinted
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
