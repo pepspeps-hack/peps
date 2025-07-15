@@ -2,7 +2,7 @@ import yaml
 import os
 import time
 import datetime
-from pyVinted import Vinted
+from pyVinted.vinted import Vinted
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -23,7 +23,7 @@ def save_cache(cache):
         json.dump(list(cache), f)
 
 import yaml
-from vinted import Vinted
+from pyVinted import Vinted
 
 def load_config():
     with open('config.yaml', 'r') as f:
