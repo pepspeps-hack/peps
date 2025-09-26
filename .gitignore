@@ -1,0 +1,78 @@
+# Android Studio
+.idea/
+.gradle/
+build/
+local.properties
+*.iml
+
+# Android build files
+app/build/
+/build
+
+# Mac
+.DS_Store
+
+# Captures
+.cxx/
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Local properties
+local.properties
+
+# Keystore files
+*.jks
+*.keystore
+
+# Log files
+*.log
+
+# Explicitly allow gradlew
+!gradlew
+!gradlew.bat
+
+# Intellij
+.idea/
+*.ipr
+*.iws
+
+# Buck
+buck-out/
+\.buckd/
+*.keystore
+!/.idea/workspace.xml
+!/.idea/misc.xml
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Mobile-specific
+*.apk
+*.ap_
+*.aab
+*.aar
+*.dex
+*.smp
+
+# Google Services
+app/google-services.json
+
+# Profiler
+*.hprof
+
+# Lint
+lint/
+.DS_Store
+/captures/
+.externalNativeBuild/
+.cxx/
+app/lint/
+lint-results-debug.xml
+lint-results-release.xml
