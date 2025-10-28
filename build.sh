@@ -3,11 +3,29 @@
 # Stop het script onmiddellijk als er een fout optreedt
 set -e
 
-echo "Automatisch build- en versleutelingsproces gestart..."
+# --- Voorbereiding: Controleer of alle benodigde tools geïnstalleerd zijn ---
+check_dependency() {
+    if ! command -v "$1" &> /dev/null; then
+        echo "FOUT: Het commando '$1' is niet gevonden."
+        echo "Dit is een vereiste om de crypter te bouwen."
+        echo "Installeer het met het volgende commando:"
+        echo "sudo apt-get install $2"
+        exit 1
+    fi
+}
 
-# --- Voorbereiding: Maak benodigde mappen aan ---
+echo "Controleren op benodigde software..."
+check_dependency cmake cmake
+check_dependency make build-essential
+check_dependency x86_64-w64-mingw32-g++ mingw-w64
+echo "Alle benodigde software is aanwezig."
+echo ""
+
+# --- Maak benodigde mappen aan ---
 mkdir -p input
 mkdir -p output
+
+echo "Automatisch build- en versleutelingsproces gestart..."
 
 # --- Stap 1: Controleer of er een payload is ---
 echo "1/4: Controleren op een .exe-bestand in de 'input' map..."

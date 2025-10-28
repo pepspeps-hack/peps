@@ -2,6 +2,26 @@
 
 Dit project is een private crypter die is ontworpen om `.exe`-bestanden te versleutelen en te verbergen voor beveiligingssoftware.
 
+## Benodigdheden
+
+Voordat je het script kunt uitvoeren, moet je ervoor zorgen dat de volgende software op je systeem (bijv. Ubuntu/Debian) is geïnstalleerd:
+
+*   **build-essential**: Bevat basis C++ compilers en `make`.
+    ```bash
+    sudo apt-get update
+    sudo apt-get install build-essential
+    ```
+*   **cmake**: Nodig om de projecten te bouwen.
+    ```bash
+    sudo apt-get install cmake
+    ```
+*   **mingw-w64**: Cross-compiler om Windows-bestanden te bouwen op Linux.
+    ```bash
+    sudo apt-get install mingw-w64
+    ```
+
+Het `build.sh` script zal automatisch controleren of deze software aanwezig is en je een foutmelding geven als er iets ontbreekt.
+
 ## Hoe te Gebruiken (Vereenvoudigd)
 
 Het hele proces is geautomatiseerd. Volg gewoon deze drie simpele stappen.
