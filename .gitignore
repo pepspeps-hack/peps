@@ -1,0 +1,35 @@
+# C++ build files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.map
+*.pch
+*.gch
+*.ncb
+*.suo
+
+# Build directories
+build/
+bin/
+obj/
+Debug/
+Release/
+
+# User-specific files
+*.user
+*.userprefs
+
+# IDE files
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
