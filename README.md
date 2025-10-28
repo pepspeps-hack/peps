@@ -1,19 +1,40 @@
 # Private Crypter
 
-This project is a private crypter designed to obfuscate Portable Executable (PE) files to bypass security software. It consists of two main components: a Builder and a Stub.
+Dit project is een private crypter die is ontworpen om `.exe`-bestanden te versleutelen en te verbergen voor beveiligingssoftware.
 
-## Builder
+## Hoe te Gebruiken (Vereenvoudigd)
 
-The Builder is a C++ application that takes a source `.exe` file as input and produces an obfuscated executable. It encrypts the binary code of the source file using AES-256 and bundles the encrypted payload with the Stub.
+Het hele proces is geautomatiseerd. Volg gewoon deze drie simpele stappen.
 
-## Stub
+### Stap 1: Plaats je EXE-bestand
 
-The Stub is a small decryption routine embedded in the obfuscated executable. It performs anti-analysis checks to detect sandboxes and debuggers, decrypts the payload in memory, and uses reflective loading to inject the payload into a legitimate process.
+*   Plaats het `.exe`-bestand dat je wilt versleutelen in de `input` map.
 
-## Obfuscation Techniques
+### Stap 2: Voer het Build Script uit
 
-The crypter employs a range of advanced obfuscation techniques to make the generated executable difficult to analyze and detect:
+*   Open een terminal en voer het volgende commando uit in de hoofdmap van het project:
+    ```bash
+    ./build.sh
+    ```
+*   Het script zal automatisch alle benodigde tools compileren en je `.exe`-bestand versleutelen.
 
-- **Code Flow Obfuscation:** The Stub's execution flow is randomized to confuse static analysis tools.
-- **String Obfuscation:** Critical strings, such as Windows API function names, are encoded and decrypted at runtime.
-- **Metacompilation:** The Stub is compiled with randomized variable and function names to create a unique binary signature.
+### Stap 3: Vind je Versleutelde Bestand
+
+*   Het uiteindelijke, versleutelde `.exe`-bestand wordt opgeslagen in de `output` map. De naam wordt automatisch aangepast naar `[originele-naam]_crypted.exe`.
+
+---
+
+## Technische Details
+
+### Componenten
+
+*   **Builder**: De tool (gecompileerd voor Linux) die de payload (`.exe`) versleutelt met AES-256 en samenvoegt met de Stub.
+*   **Stub**: De Windows loader (`stub.exe`) die de versleutelde payload in het geheugen ontsleutelt en injecteert in een legitiem proces (`svchost.exe`) via reflective loading.
+
+### Beveiligingstechnieken
+
+*   **AES-256 Encryptie**: Vervangt de simpele XOR-versleuteling voor robuuste bescherming.
+*   **Dynamische IV**: Gebruikt een cryptografisch veilige, willekeurige IV voor elke versleuteling.
+*   **Key Obfuscation**: De AES-sleutel is opgesplitst en wordt pas tijdens runtime in het geheugen samengevoegd.
+*   **Reflective Loading**: De payload wordt nooit op de schijf geschreven, maar direct in het geheugen van een ander proces uitgevoerd.
+*   **Stille Fouten**: De loader is ontworpen om stil te falen zonder foutmeldingen te tonen.
