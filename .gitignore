@@ -1,7 +1,6 @@
 # C++ build files
 *.o
 *.obj
-*.exe
 *.dll
 *.so
 *.a
@@ -33,3 +32,19 @@ Release/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+# --- Project-specifieke bestanden negeren ---
+
+# Negeer alle uitvoerbare bestanden in de root directory
+# (bijv. een oude output.exe of test.exe)
+/*.exe
+
+# Negeer de inhoud van de input en output mappen,
+# maar behoud de mappen zelf in de repository.
+/input/*
+/output/*
+
+# Maak een uitzondering voor de .gitkeep bestanden,
+# zodat de mappen altijd zichtbaar zijn.
+!/input/.gitkeep
+!/output/.gitkeep
