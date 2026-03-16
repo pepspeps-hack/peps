@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">PRTracker</string>
+    <string name="exercise_name_hint">Exercise Name</string>
+    <string name="weight_hint">Weight</string>
+    <string name="reps_hint">Reps</string>
+    <string name="add_set">Add Set</string>
+    <string name="logged_sets">Logged Sets:</string>
+    <string name="error_fill_all_fields">Please fill all fields</string>
+    <string name="error_invalid_input">Invalid weight or reps</string>
+    <string name="exercise_set_format">\n%1$s:\n</string>
+    <string name="set_details_format">\tSet %1$d: %2$d reps at %3$.1f kg\n</string>
+</resources>
