@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mijn Somtoday Portaal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .status-bar {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status-ok { color: #27ae60; }
+        .status-error { color: #e74c3c; }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        .output-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 200px;
+        }
+        .item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .item:last-child { border-bottom: none; }
+        .badge {
+            background-color: #e67e22;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📚 Mijn Somtoday Portaal</h1>
+
+    <div id="statusBar" class="status-bar">
+        Status wordt gecontroleerd...
+    </div>
+
+    <div class="button-group">
+        <button onclick="haalRoosterOp()">📅 Haal Rooster Op</button>
+        <button onclick="haalHuiswerkOp()">📖 Haal Huiswerk Op</button>
+    </div>
+
+    <div id="output" class="output-box">
+        Hier verschijnt je data. Druk op een van de knoppen hierboven!
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('statusBar');
+        const outputEl = document.getElementById('output');
+
+        // Check connection on load
+        fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'connected') {
+                    statusEl.innerHTML = `✅ <span class="status-ok">${data.message}</span>`;
+                } else {
+                    statusEl.innerHTML = `❌ <span class="status-error">${data.message || 'Geen verbinding met Somtoday.'}</span>`;
+                }
+            })
+            .catch(err => {
+                statusEl.innerHTML = `⚠️ <span class="status-error">Kan de server niet bereiken. Draait de API server (node server.js)?</span>`;
+            });
+
+        // Fetch Schedule
+        function haalRoosterOp() {
+            outputEl.innerHTML = '<p>Laden...</p>';
+            fetch('/api/rooster')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        outputEl.innerHTML = `<p style="color:red">Fout: ${data.error}</p>`;
+                        return;
+                    }
+                    if (!data.rooster || data.rooster.length === 0) {
+                        outputEl.innerHTML = '<p>Geen rooster gevonden voor de komende 7 dagen.</p>';
+                        return;
+                    }
+
+                    let html = '<h2>Jouw Rooster (komende 7 dagen)</h2>';
+                    data.rooster.forEach(les => {
+                        const start = new Date(les.startTijd).toLocaleString('nl-NL');
+                        const eind = new Date(les.eindTijd).toLocaleTimeString('nl-NL');
+                        html += `
+                            <div class="item">
+                                <strong>${les.vak || les.titel}</strong> <span class="badge">${les.lesuur || 'Geen lesuur bekend'}</span><br>
+                                ⏱️ ${start} - ${eind}<br>
+                                📍 ${les.locatie || 'Onbekend lokaal'} | 👨‍🏫 ${les.docent || 'Onbekende docent'}
+                            </div>
+                        `;
+                    });
+                    outputEl.innerHTML = html;
+                })
+                .catch(err => outputEl.innerHTML = `<p style="color:red">Systeemfout: ${err.message}</p>`);
+        }
+
+        // Fetch Homework
+        function haalHuiswerkOp() {
+            outputEl.innerHTML = '<p>Laden...</p>';
+            fetch('/api/huiswerk')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        outputEl.innerHTML = `<p style="color:red">Fout: ${data.error}</p>`;
+                        return;
+                    }
+                    if (!data.huiswerk || data.huiswerk.length === 0) {
+                        outputEl.innerHTML = '<p>Geen huiswerk gevonden vanaf vandaag.</p>';
+                        return;
+                    }
+
+                    let html = '<h2>Jouw Huiswerk / Leerwerk</h2>';
+                    data.huiswerk.forEach(hw => {
+                        const datum = hw.datum ? new Date(hw.datum).toLocaleDateString('nl-NL') : 'Onbekende datum';
+                        html += `
+                            <div class="item">
+                                <strong>${hw.vak}</strong> <span class="badge" style="background-color: #8e44ad;">${hw.type || 'Huiswerk'}</span><br>
+                                📅 Tegen: ${datum}<br>
+                                📝 ${hw.taak}
+                            </div>
+                        `;
+                    });
+                    outputEl.innerHTML = html;
+                })
+                .catch(err => outputEl.innerHTML = `<p style="color:red">Systeemfout: ${err.message}</p>`);
+        }
+    </script>
+</body>
+</html>
