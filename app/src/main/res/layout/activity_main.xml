@@ -11,33 +11,33 @@
         android:id="@+id/exercise_name_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Exercise Name" />
+        android:hint="@string/exercise_name_hint" />
 
     <EditText
         android:id="@+id/weight_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Weight"
+        android:hint="@string/weight_hint"
         android:inputType="numberDecimal" />
 
     <EditText
         android:id="@+id/reps_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Reps"
+        android:hint="@string/reps_hint"
         android:inputType="number" />
 
     <Button
         android:id="@+id/add_set_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Set" />
+        android:text="@string/add_set" />
 
     <TextView
         android:id="@+id/logged_sets_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Logged Sets:" />
+        android:text="@string/logged_sets" />
 
 </LinearLayout>

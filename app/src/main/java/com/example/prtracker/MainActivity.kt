@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         val repsStr = repsInput.text.toString()
 
         if (exerciseName.isBlank() || weightStr.isBlank() || repsStr.isBlank()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_fill_all_fields), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         val reps = repsStr.toIntOrNull()
 
         if (weight == null || reps == null) {
-            Toast.makeText(this, "Invalid weight or reps", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.error_invalid_input), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -70,11 +70,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateLoggedSetsText() {
         val stringBuilder = StringBuilder()
-        stringBuilder.append("Logged Sets:\n")
+        stringBuilder.append(getString(R.string.logged_sets))
         currentExercises.forEach { exercise ->
-            stringBuilder.append("\n${exercise.name}:\n")
+            stringBuilder.append(getString(R.string.exercise_set_format, exercise.name))
             exercise.sets.forEachIndexed { index, set ->
-                stringBuilder.append("  Set ${index + 1}: ${set.reps} reps at ${set.weight} kg\n")
+                stringBuilder.append(
+                    getString(
+                        R.string.set_details_format,
+                        index + 1,
+                        set.reps,
+                        set.weight
+                    )
+                )
             }
         }
         loggedSetsText.text = stringBuilder.toString()
