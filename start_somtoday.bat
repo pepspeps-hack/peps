@@ -47,10 +47,12 @@ echo Je browser opent zo dadelijk vanzelf.
 echo Sluit dit zwarte venster NIET af zolang je de website gebruikt!
 echo.
 
-:: Wacht 2 seconden en open dan de browser
+:: Open de browser (werkt in de achtergrond)
 start "" http://localhost:3000
 
-:: Start de applicatie
-node server.js
+:: Start de applicatie expliciet en houd het venster open als er een fout is
+call node server.js
 
+echo.
+echo [Fout] De server is onverwacht gestopt. Lees de foutmelding hierboven.
 pause
